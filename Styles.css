@@ -1,0 +1,134 @@
+* {
+    padding: 0;
+    margin: 0;
+}
+
+body {
+    background-color: #000;
+}
+
+source, .video  {
+    width: 100%;
+    height: 75%;
+    position: absolute;
+}
+
+ .blur{
+     -webkit-filter: blur(300px);
+     -ms-filter: blur(300px);
+     filter: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg'><filter id='blur'><feGaussianBlur stdDeviation='1'/></filter></svg>#blur");
+ }
+
+.wrapper {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%);
+    background: cadetblue;
+}
+
+.startButton{
+    border-radius: 4px;
+    -webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.08);
+    -moz-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.08);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.08);
+    color: #fff;
+    display:block;
+    width:220px;
+    height: 50px;
+    text-align: center;
+    font-size: 14px;
+    padding: 8px 16px;
+    text-decoration: none;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.075);
+    background: silver;
+
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.startButton {
+    background-color: rgb( 43, 153, 91 );
+    border: 1px solid rgb( 33, 126, 74 );
+}
+
+/*.startButton:hover {
+    background-color: rgb( 75, 183, 141 );
+}*/
+
+.Buttons {
+    background: transparent;
+    border: 1px solid royalblue;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.6);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.08);
+    padding: 10px;
+    font-size: 20px;
+    position: relative;
+    color: white;
+    left: 50%;
+    transform: translate(-50%);
+    margin-top: 5px;
+    display: block;
+    width: 640px;
+    top: 60px;
+    -webkit-border-radius: 8px;
+    -moz-border-radius: 8px;
+    border-radius: 15px;
+    transition: all 0.5s;
+}
+
+.Buttons:first-child {
+    margin-top: 0;
+}
+
+.Buttons:hover {
+    border-radius: 10px;
+}
+
+#ButtonsBlock {
+    width: 100%;
+    height: 50%;
+    position: absolute;
+    margin-top: 200px;
+    top: 50%;
+}
+
+#controlButton {
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.075);
+    position: absolute;
+    transform: translate(-50%);
+    left: 50%;
+    top: 40%;
+    padding: 15px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.08);
+    color: white;
+    border-radius: 5px;
+    background: transparent;
+    border: 1px solid royalblue;
+    transition: all .5s;
+}
+
+#controlButton:hover {
+    border-radius: 10px;
+}
+
+.falseAnswer {
+    background: red;
+}
+
+.trueAnswer {
+    background: lawngreen;
+    color: darkgreen;
+}
+
+#counter {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 60px;
+    color: whitesmoke;
+}
