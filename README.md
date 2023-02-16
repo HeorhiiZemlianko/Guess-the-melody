@@ -87,60 +87,62 @@ Javascript
 - HTML
 ```html
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-	<meta charset="utf-8">
-	<title>3D Layer Image Hover Effect</title>
-	<link rel="stylesheet" type="text/css" href="3dimaje.css">
+    <meta charset="UTF-8">
+    <title>Music Battle</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+    <link rel="stylesheet" href="Styles.css">
 </head>
 <body>
-	<div class="container">
-		<img src="05_Navigation_Menu.jpg">
-		<img src="05_Navigation_Menu.jpg">
-		<img src="05_Navigation_Menu.jpg">
-		<img src="05_Navigation_Menu.jpg">
-	</div>
+<div class="wrapper">
+  <div id="viewContent">
+      <p id="counter"></p>
+  </div>
+    <div id="ButtonsBlock"></div>
+</div>
+<script src="main.js" type="text/javascript"></script>
 </body>
 </html>
 ```
 - CSS
 ```css
-body{
-	margin: 0;
-	padding: 0;
-	height: 100vh;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 100%;
+* {
+    padding: 0;
+    margin: 0;
 }
-.container{
-	position: relative;
-	width: 250px;
-	height: 415px;
-	background: rgba(0,0,0,0.1);
-	transform: rotate(-30deg) skew(25deg);
-	transition: 0.5s;
+
+body {
+    background-color: #000;
 }
-.container img{
-	position: absolute;
-	width: 100%;
-	transition: 0.5s;
+
+source, .video  {
+    width: 100%;
+    height: 75%;
+    position: absolute;
+    
+    ........
+    
+    #controlButton:hover {
+    border-radius: 10px;
 }
-.container:hover img:nth-child(4){
-	transform: translate(120px, -120px);
-	opacity: 1;
+
+.falseAnswer {
+    background: red;
 }
-.container:hover img:nth-child(3){
-	transform: translate(90px, -90px);
-	opacity: .8;
+
+.trueAnswer {
+    background: lawngreen;
+    color: darkgreen;
 }
-.container:hover img:nth-child(2){
-	transform: translate(60px, -60px);
-	opacity: .6;
-}
-.container:hover img:nth-child(1){
-	transform: translate(30px, -30px);
-	opacity: .4;
+
+#counter {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 60px;
+    color: whitesmoke;
 }
 ```
