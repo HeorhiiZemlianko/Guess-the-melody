@@ -27,25 +27,60 @@ html
 ├── head
 │   ├── meta
 │   ├── title
+│   ├── link
+│   ├── link
 │   └── link
-└── body
-    ├── div.container
-        ├── img
-        ├── img
-        ├── img
-        └── img
+├── body
+│   └── div.wrapper
+│   	├── div#viewContent
+│   	│   └── p#counter
+│   	└── div#ButtonsBlock
+└── script
 ```
 
 ## Schematic representation of the CSS structure
 ```
 css
+├── *
 ├── body
-├── .container
-├── .container img
-├── .container:hover img: ntn-child(4)
-├── .container:hover img: ntn-child(3)
-├── .container:hover img: ntn-child(2)
-└── .container:hover img: ntn-child(1)
+├── source
+├── .video
+├── .blur
+├── .wrapper
+├── .startButton
+├── .Buttons
+├── .Buttons:first-child
+├── .Buttons:hover 
+├── #ButtonsBlock
+├── #controlButton
+├── .falseAnswer
+├── .trueAnswer
+└── #counter
+```
+
+## Schematic representation of the JS structure
+```
+Javascript
+├── addStartButton()
+├── addControlButton()
+├── isShow(element, prop)
+├── addMelodyButton(text)
+├── installButton()
+├── removeButton(name)
+├── itemDone(e)
+├── checkAnswer(target)
+├── toggleIcon(controlButton, videoElement)
+├── togglePlayVideo(videoElement) 
+├── removeBlur()
+├── addListener() 
+├── addNextSongs()
+├── audioChange()
+├── removeClass()
+├── removeElements()
+├── changeCounter()
+├── makeVideoElement()
+├── changeVideo() 
+└── makeVideoElement() 
 ```
 
 ## Code from the project
