@@ -20,6 +20,7 @@ There are currently 30 songs in this version of the game. In the future, it is p
 <p>A simple experiment with <b>css & html & JScript</b> and test your knowledge of music and songs.</p>
 <p>A demo implementation of this game can be viewed again at this link:<a href="https://heorhiizemlianko.github.io/Guess-the-melody/"> <b>Play Game</b> </a></p>
 
+
 ## Schematic representation of the HTML structure
 ```
 html
