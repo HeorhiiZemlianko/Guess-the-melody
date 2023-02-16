@@ -1,4 +1,3 @@
-
 function addStartButton() {
     let startButton = document.createElement('button'),
         textInBut = document.createTextNode('Start the Game!');
