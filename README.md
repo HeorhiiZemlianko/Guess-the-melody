@@ -146,3 +146,89 @@ source, .video  {
     color: whitesmoke;
 }
 ```
+- JavaScript
+```JavaScript
+function addStartButton() {
+    let startButton = document.createElement('button'),
+        textInBut = document.createTextNode('Start the Game!');
+    startButton.appendChild(textInBut);
+    startButton.className = 'startButton';
+    wrapper.insertBefore(startButton, buttonsBlock); //(element, nextSibling)
+    buttonsBlock.style.display = 'none';
+}
+
+function addControlButton() {
+    let button = document.createElement('button');
+    button.innerHTML = '<i class="fa fa-play" aria-hidden="true"></i>';
+    wrapper.insertBefore(button, buttonsBlock);
+    button.setAttribute('id', 'controlButton');
+}
+
+......
+
+function checkAnswer(target) {
+    if (target.classList.contains('Buttons'))
+    {
+        let key = target.innerHTML;
+        if (songs[key] !== 0) {
+        target.classList.add("trueAnswer");
+            guessedSongs += 1;
+    } else {
+        target.classList.add("falseAnswer");
+        //buttons[n].classList.add("trueAnswer");
+        }
+    }
+}
+
+.....
+
+function changeVideo() {
+    function remove() {
+        document.querySelector('.video').remove();
+    }
+    remove();
+    VideoIndex += 1;
+}
+
+.....
+
+//видео материал
+const videoObj = {
+    1 : 'Source/1.mp4',
+    2 : 'Source/2.mp4',
+    3 : 'Source/3.mp4',
+    4 : 'Source/4.mp4',
+          .....
+    28 : 'Source/28.mp4',
+    29 : 'Source/29.mp4',
+    30 : 'Source/30.mp4'
+};
+
+.....
+
+//проверка и соотношение верных ответов
+const keys = Object.keys(songs),
+      keysInVideo = Object.keys(videoObj),
+      answers = [7, 11, 12, 17, 24, 27, 29, 36, 38, 43, 48, 50, 55, 57, 64, 67, 70, 76, 77, 82, 87, 89, 95, 99, 104, 106, 111, 113, 119],
+      elCounter = document.querySelector('#counter');
+//переменная ответа, количество вариантов ответа
+var n = 7,
+    VideoIndex = 0,
+    high = 4,
+    index = 1,
+    guessedSongs = 0;
+
+.......
+
+startButton.addEventListener('click', () => {
+    removeButton(startButton);
+    changeBG();
+    addControlButton();
+    addListener();
+    makeVideoElement();
+    isShow(buttonsBlock,'block');
+    for (let i = 0; i < buttons.length; i++) {
+        isShow(buttons[i],'block');
+    }
+}, false);
+```
