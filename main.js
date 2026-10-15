@@ -139,23 +139,33 @@ function generateOptions(correctTitle, allTracks) {
 
 // ===== Создание или обновление плеера =====
 function createOrUpdatePlayer(videoId) {
-    // Очищаем область (убираем кнопку старта, если она есть)
-    viewContent.innerHTML = '';
+    // Убираем только сообщения об ошибках или кнопку старта, не трогаем плеер
+    const errorMsg = viewContent.querySelector('.error, .loading, .startButton');
+    if (errorMsg) errorMsg.remove();
+
+    let playerContainer = document.getElementById('youtube-player');
     
-    // Создаем контейнер для плеера
-    const playerContainer = document.createElement('div');
-    playerContainer.id = 'youtube-player';
-    viewContent.appendChild(playerContainer);
-    
-    // Создаем или обновляем плеер
+    // Если контейнера нет, создаём его
+    if (!playerContainer) {
+        playerContainer = document.createElement('div');
+        playerContainer.id = 'youtube-player';
+        // Вставляем плеер ПЕРЕД оверлеем, чтобы оверлей был сверху
+        const overlay = viewContent.querySelector('.video-overlay');
+        if (overlay) {
+            viewContent.insertBefore(playerContainer, overlay);
+        } else {
+            viewContent.appendChild(playerContainer);
+        }
+    }
+
+    // Если плеер уже создан, просто загружаем новое видео
     if (state.player) {
-        // Если плеер уже есть, просто загружаем новое видео
         state.player.loadVideoById({
             videoId: videoId,
             startSeconds: CONFIG.START_TIME
         });
     } else {
-        // Если плеера нет, создаем его
+        // Инициализируем плеер в первый раз
         state.player = new YT.Player('youtube-player', {
             height: '100%',
             width: '100%',
@@ -168,7 +178,7 @@ function createOrUpdatePlayer(videoId) {
                 'rel': 0,
                 'start': CONFIG.START_TIME, 
                 'end': CONFIG.START_TIME + CONFIG.ROUND_DURATION,
-                'origin': window.location.origin // ВАЖНО: Помогает исправить ошибки postMessage
+                'origin': window.location.origin
             },
             events: {
                 'onReady': onPlayerReady,
