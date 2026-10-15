@@ -272,3 +272,19 @@ body {
         font-size: 1.1rem;
     }
 }
+
+.source-link a {
+    color: var(--text-light);
+    text-decoration: none;
+    font-size: 0.9rem;
+    opacity: 0.7;
+    transition: opacity 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.source-link a:hover {
+    opacity: 1;
+    color: #ff0000; /* Красный цвет YouTube */
+}
