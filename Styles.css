@@ -288,3 +288,15 @@ body {
     opacity: 1;
     color: #ff0000; /* Красный цвет YouTube */
 }
+
+/* Оверлей, скрывающий название видео */
+.video-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60px; /* Высота верхней панели YouTube */
+    background: #0a0a0a; /* Цвет вашего фона */
+    z-index: 5; /* Поверх видео */
+    pointer-events: none; /* Клики проходят сквозь него */
+}
