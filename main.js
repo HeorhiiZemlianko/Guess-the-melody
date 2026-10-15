@@ -3,8 +3,37 @@ const CONFIG = {
     PROXY_URL: 'https://guessthemelody-482baoika-wild-happines.vercel.app/api/proxy', // URL вашего прокси
     ROUND_DURATION: 60, // Длительность раунда в секундах
     START_TIME: 15, // С какого момента начинать воспроизведение (в секундах)
-    GENRES: ['pop', 'rock', 'hip-hop', 'electronic', 'jazz'], // Жанры для поиска
-    PLAYLIST_ID: 'PL45_r-J4SdAFM0PbG6QeqVpLu975CK9Ip' // Пример ID плейлиста
+    PLAYLIST_IDS: ['PL45_r-J4SdAFM0PbG6QeqVpLu975CK9Ip', // Пример ID плейлиста
+                   'PL0GvsLQil0MmYC96KEs_7dTNsLm1PS6JX',
+                   'PLVQ7g3e6O27cH8KG9mktLWH8zcqiwTntP',
+                   'PLGBuKfnErZlAdX8X5LC9ODeHaxoxTuV2z',
+                   'PLn4GvABOzCQursVQ7qMU9CkNaKz4RgrVM',
+                   'PLplXQ2cg9B_qrCVd1J_iId5SvP8Kf_BfS',
+                   'PLa2a9FJY91_0x1s4eq6mf9b91m3Pahv0G',
+                   'PLLRIXAxtV8zwSNxHwvdMVsxshybCCyuRT',
+                   'PLDIoUOhQQPlXr63I_vwF9GD8sAKh77dWU',
+                   'PLDIoUOhQQPlWc-Kd6TCjTRIl0Z6fSQV0X',
+                   'PL7DA3D097D6FDBC02',
+                   'PLK8eO9itnhzfKFSQJ28kExpwZAv7TdvnA',
+                   'PLvMVt4c68EeXRV2R1fdieei9HwpuUKXKL',
+                   'PLpxuOeEi0yCQtge9JUBOH--_yqg-jUm4h',
+                   'PL4sJ8-_X2ESCrsyPWS8sUyU6z1Ssv6a9V',
+                   'PLmXxqSJJq-yXrCPGIT2gn8b34JjOrl4Xf',
+                   'PLG5FRq89_oJ40pbXEQ2AxA5rYu7hefUor',
+                   'PLMZxug3Hi7FaQ4HE-NEt9qpG2lvABRiwf',
+                   'PLGBuKfnErZlBUh0KAYO3MvJ0bGqVZkhuG',
+                   'PLw-VjHDlEOgtH-Ce-dJzPOtIm5xTVC4t2',
+                   'PL9WAfiI0yDE-EQjgQ3eoD_WKP-FvwuwoW',
+                   'PL2hGGKKbxvqKJltSpqWA-IsKrZjJGkN0f',
+                   'PL4fGSI1pDJn4E_HoW5HB-w5vFPkYfo3dB',
+                   'PL-X-RdKBc6bZn4ikgv6ePzT5huW9Skp22',
+                   'PLUU0HxYhx6SYAXu61BOGo8RmmHU38DThS',
+                   'PLw7pKYWfLkB7BE3_vJDhREZMX9ygFE89D',
+                   'PLXAfqIM-LFu5zBMsv-wK4h6-OfLtSyBYG',
+                   'PLNgxbIxenTkPp6etGScybfrECfbXm2ZUz',
+                   'PLxD4o4XAOgl8Hx3AKFLb9st5TKs2oVMRv',
+                   'PLd5lauRj72uJdKMqnZK6gqQRdr5nGlHlg'
+    ]
 };
 
 // ===== Состояние игры =====
@@ -66,7 +95,7 @@ function addStartButton() {
 
 async function startGame() {
     document.querySelector('.startButton')?.remove();
-    await loadNextRound();
+    await ();
 }
 
 // ===== Загрузка раунда =====
@@ -74,7 +103,7 @@ async function loadNextRound() {
     // 1. Получаем случайный трек из плейлиста (через прокси)
     const tracks = await fetchPlaylistTracks();
     if (!tracks || tracks.length === 0) {
-        viewContent.innerHTML = '<div class="error">Не удалось загрузить треки. Попробуйте позже.</div>';
+        viewContent.querySelectorAll('.error, .loading').forEach(el => el.remove());
         return;
     }
     
@@ -101,11 +130,14 @@ async function loadNextRound() {
 // ===== Получение треков из плейлиста YouTube =====
 async function fetchPlaylistTracks() {
     try {
-        // Используем прокси для обхода CORS
-        const response = await fetch(`${CONFIG.PROXY_URL}?endpoint=playlistItems&part=snippet&playlistId=${CONFIG.PLAYLIST_ID}&maxResults=20`);
+        // Выбираем случайный плейлист из массива
+        const randomPlaylistId = CONFIG.PLAYLIST_IDS[Math.floor(Math.random() * CONFIG.PLAYLIST_IDS.length)];
+        
+        const response = await fetch(`${CONFIG.PROXY_URL}?endpoint=playlistItems&part=snippet&playlistId=${randomPlaylistId}&maxResults=20`);
         const data = await response.json();
         
-        // Преобразуем данные в удобный формат
+        if (!data.items) return []; // Если плейлист пустой или приватный
+
         return data.items.map(item => ({
             title: item.snippet.title,
             videoId: item.snippet.resourceId.videoId,
