@@ -165,20 +165,37 @@ async function loadNextRound() {
     updateProgress();
 }
 
+// ===== Запрос плейлиста с защитой от пустых/приватных =====
 async function fetchPlaylistTracks() {
-    try {
-        const id = CONFIG.PLAYLIST_IDS[Math.floor(Math.random() * CONFIG.PLAYLIST_IDS.length)];
-        const url = `${CONFIG.PROXY_URL}?endpoint=playlistItems&part=snippet&playlistId=${id}&maxResults=30`;
-        const res = await fetch(url);
-        const data = await res.json();
-        if (!data.items) return [];
-        return data.items
-            .map(i => ({ title: i.snippet.title, videoId: i.snippet.resourceId.videoId }))
-            .filter(t => t.videoId);
-    } catch (e) {
-        console.error('Ошибка загрузки плейлиста:', e);
-        return [];
+    let attempts = 0;
+    const maxAttempts = 5; // Максимум 5 попыток
+
+    while (attempts < maxAttempts) {
+        attempts++;
+        try {
+            const randomPlaylistId = CONFIG.PLAYLIST_IDS[Math.floor(Math.random() * CONFIG.PLAYLIST_IDS.length)];
+            const url = `${CONFIG.PROXY_URL}?endpoint=playlistItems&part=snippet&playlistId=${randomPlaylistId}&maxResults=30`;
+            const response = await fetch(url);
+            const data = await response.json();
+
+            // Если получили нормальный список (>= 4 треков), возвращаем его
+            if (data.items && data.items.length >= 4) {
+                return data.items
+                    .map(item => ({
+                        title: item.snippet.title,
+                        videoId: item.snippet.resourceId.videoId
+                    }))
+                    .filter(t => t.videoId);
+            }
+
+            console.warn(`Плейлист ${randomPlaylistId} пустой или приватный. Пробуем другой...`);
+        } catch (error) {
+            console.error('Ошибка загрузки плейлиста:', error);
+        }
     }
+
+    // Если все попытки провалились — возвращаем пустой массив
+    return [];
 }
 
 // ===== Варианты ответа (дедуп по videoId) =====
