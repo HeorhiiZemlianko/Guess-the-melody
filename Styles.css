@@ -86,6 +86,7 @@ body {
     border-radius: var(--border-radius);
     overflow: hidden;
     background: #000;
+    min-height: 300px; /* Чтобы область не была слишком маленькой */
 }
 
 #viewContent video,
