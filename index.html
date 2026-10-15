@@ -2,18 +2,37 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Music Battle</title>
-    <link rel="icon" href="https://github.com/HeorhiiZemlianko/Guess-the-melody/blob/main/favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Battle — Угадай мелодию</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <!-- Современные иконки -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Шрифт для современного вида -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="Styles.css">
 </head>
 <body>
-<div class="wrapper">
-  <div id="viewContent">
-      <p id="counter"></p>
-  </div>
-    <div id="ButtonsBlock"></div>
-</div>
-<script src="main.js" type="text/javascript"></script>
+    <div class="game-container">
+        <!-- Верхняя панель: счёт, таймер, прогресс -->
+        <header class="game-header">
+            <div class="score">Счёт: <span id="scoreValue">0</span></div>
+            <div class="timer">Время: <span id="timerValue">30</span>с</div>
+            <div class="progress-bar"><div id="progressFill"></div></div>
+        </header>
+
+        <!-- Область для видео/аудио -->
+        <main id="viewContent"></main>
+
+        <!-- Блок с вариантами ответов -->
+        <div id="ButtonsBlock"></div>
+
+        <!-- Финальный экран (появится после игры) -->
+        <div id="finalScreen" class="hidden">
+            <h2>Игра завершена!</h2>
+            <p>Ваш счёт: <span id="finalScore">0</span></p>
+            <button id="restartButton">Играть снова</button>
+        </div>
+    </div>
+    <script src="main.js" type="text/javascript"></script>
 </body>
 </html>
