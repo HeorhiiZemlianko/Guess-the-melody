@@ -17,7 +17,7 @@ export default async function handler(req, res) {
         const data = await response.json();
         
         // Разрешаем CORS для вашего домена GitHub Pages
-        res.setHeader('Access-Control-Allow-Origin', 'https://heorhiizemlianko.github.io'); 
+        res.setHeader('Access-Control-Allow-Origin', '*'); 
         res.setHeader('Access-Control-Allow-Methods', 'GET');
         res.status(200).json(data);
     } catch (error) {
