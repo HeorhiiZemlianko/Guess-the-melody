@@ -85,14 +85,17 @@ async function loadNextRound() {
     // 2. Генерируем неправильные варианты
     state.options = generateOptions(correctTrack.title, tracks);
     
-    // 3. Создаем или обновляем плеер
-    createOrUpdatePlayer(correctTrack.videoId);
-    
-    // 4. Обновляем кнопки
+    // 3. Обновляем кнопки
     updateButtons();
     
-    // 5. Запускаем таймер
-    startTimer();
+    // 4. Создаем или обновляем плеер (таймер запустится сам, когда видео начнет играть)
+    createOrUpdatePlayer(correctTrack.videoId);
+    
+    // 5. Сбрасываем таймер (чтобы он не висел с прошлого раунда)
+    clearInterval(state.timer);
+    state.timeLeft = CONFIG.ROUND_DURATION;
+    timerValue.textContent = state.timeLeft;
+    updateProgress();
 }
 
 // ===== Получение треков из плейлиста YouTube =====
@@ -209,10 +212,8 @@ function togglePlay() {
     if (!state.player) return;
     if (state.player.getPlayerState() === YT.PlayerState.PLAYING) {
         state.player.pauseVideo();
-        document.querySelector('#controlButton').innerHTML = '<i class="fa fa-play"></i>';
     } else {
         state.player.playVideo();
-        document.querySelector('#controlButton').innerHTML = '<i class="fa fa-pause"></i>';
     }
 }
 
