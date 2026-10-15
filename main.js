@@ -1,5 +1,3 @@
-// main.js 
-
 // ===== Конфигурация =====
 const CONFIG = {
     PROXY_URL: 'https://guessthemelody-482baoika-wild-happines.vercel.app/api/proxy', // URL вашего прокси
@@ -138,7 +136,7 @@ function generateOptions(correctTitle, allTracks) {
 
 // ===== Создание или обновление плеера =====
 function createOrUpdatePlayer(videoId) {
-    // Очищаем область
+    // Очищаем область (убираем кнопку старта, если она есть)
     viewContent.innerHTML = '';
     
     // Создаем контейнер для плеера
@@ -148,23 +146,26 @@ function createOrUpdatePlayer(videoId) {
     
     // Создаем или обновляем плеер
     if (state.player) {
+        // Если плеер уже есть, просто загружаем новое видео
         state.player.loadVideoById({
             videoId: videoId,
             startSeconds: CONFIG.START_TIME
         });
     } else {
+        // Если плеера нет, создаем его
         state.player = new YT.Player('youtube-player', {
             height: '100%',
             width: '100%',
             videoId: videoId,
             playerVars: {
-                'autoplay': 0, // Автовоспроизведение отключено (браузеры блокируют)
-                'controls': 0, // Скрываем стандартные элементы управления
+                'autoplay': 0, 
+                'controls': 0, 
                 'disablekb': 1,
                 'modestbranding': 1,
                 'rel': 0,
-                'start': CONFIG.START_TIME, // Начинаем с 15 секунды
-                'end': CONFIG.START_TIME + CONFIG.ROUND_DURATION // Заканчиваем через 60 секунд
+                'start': CONFIG.START_TIME, 
+                'end': CONFIG.START_TIME + CONFIG.ROUND_DURATION,
+                'origin': window.location.origin // ВАЖНО: Помогает исправить ошибки postMessage
             },
             events: {
                 'onReady': onPlayerReady,
@@ -180,7 +181,19 @@ function onPlayerReady(event) {
 }
 
 function onPlayerStateChange(event) {
-    // Можно добавить логику для отслеживания состояния
+    // Логика для отслеживания состояния
+    const controlButton = document.querySelector('#controlButton');
+    
+    // Если видео начало играть
+    if (event.data === YT.PlayerState.PLAYING) {
+        startTimer(); // Запускаем таймер ТОЛЬКО сейчас
+        if (controlButton) controlButton.innerHTML = '<i class="fa fa-pause"></i>';
+    } 
+    // Если видео на паузе
+    else if (event.data === YT.PlayerState.PAUSED) {
+        clearInterval(state.timer); // Останавливаем таймер
+        if (controlButton) controlButton.innerHTML = '<i class="fa fa-play"></i>';
+    }
 }
 
 // ===== Управление плеером =====
