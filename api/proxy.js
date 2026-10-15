@@ -1,10 +1,21 @@
 // api/proxy.js
 export default async function handler(req, res) {
+    // 1. Устанавливаем CORS-заголовки для ВСЕХ ответов
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+    // 2. Обрабатываем предварительный запрос OPTIONS
+    if (req.method === 'OPTIONS') {
+        // Отвечаем 204 (No Content) — это стандартный ответ для preflight
+        return res.status(204).end();
+    }
+
+    // 3. Вся остальная логика для основного GET-запроса
     const { endpoint, ...params } = req.query;
-    const YOUTUBE_API_KEY = 'AIzaSyB5E0IsEF6y7KPmlOOeFipStb3u-jiXmBs'; // Вставьте сюда ваш ключ
+    const YOUTUBE_API_KEY = 'AIzaSyB5E0IsEF6y7KPmlOOeFipStb3u-jiXmBs';
     const YOUTUBE_API_BASE = 'https://www.googleapis.com/youtube/v3';
 
-    // Собираем URL для запроса к YouTube API
     const queryParams = new URLSearchParams({
         ...params,
         key: YOUTUBE_API_KEY,
@@ -15,12 +26,8 @@ export default async function handler(req, res) {
     try {
         const response = await fetch(url);
         const data = await response.json();
-        
-        // Разрешаем CORS для вашего домена GitHub Pages
-        res.setHeader('Access-Control-Allow-Origin', '*'); 
-        res.setHeader('Access-Control-Allow-Methods', 'GET');
-        res.status(200).json(data);
+        return res.status(200).json(data);
     } catch (error) {
-        res.status(500).json({ error: 'Failed to fetch from YouTube API' });
+        return res.status(500).json({ error: 'Failed to fetch from YouTube API' });
     }
 }
