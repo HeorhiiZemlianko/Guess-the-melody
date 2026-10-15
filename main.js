@@ -1,13 +1,25 @@
+// main.js
+
+// ===== Конфигурация =====
+const CONFIG = {
+    PROXY_URL: 'https://guessthemelody-482baoika-wild-happines.vercel.app/api/proxy', // URL вашего прокси
+    ROUND_DURATION: 60, // Длительность раунда в секундах
+    START_TIME: 15, // С какого момента начинать воспроизведение (в секундах)
+    GENRES: ['pop', 'rock', 'hip-hop', 'electronic', 'jazz'], // Жанры для поиска
+    PLAYLIST_ID: 'PLFgquLnL59alCl_2TQvOiD5Vgm1hCaGSI' // Пример ID плейлиста
+};
+
 // ===== Состояние игры =====
 const state = {
-    videoIndex: 0,
+    player: null, // Ссылка на объект плеера YouTube
+    currentTrack: null,
+    options: [],
     guessedSongs: 0,
     timer: null,
-    timeLeft: 30,
-    currentTrack: null,
-    options: []
+    timeLeft: CONFIG.ROUND_DURATION,
+    isPlaying: false
 };
- 
+
 // ===== DOM-элементы =====
 const viewContent = document.querySelector('#viewContent');
 const buttonsBlock = document.querySelector('#ButtonsBlock');
@@ -25,54 +37,26 @@ const createButton = (text, className) => {
     return btn;
 };
 
-// ===== API Deezer =====
-const DEEZER_API = 'https://api.deezer.com';
-
-async function searchTrack(query) {
-    try {
-        const response = await fetch(`${DEEZER_API}/search?q=${encodeURIComponent(query)}&limit=10`);
-        const data = await response.json();
-        // Фильтруем треки, у которых есть превью
-        const tracksWithPreview = data.data.filter(track => track.preview);
-        return tracksWithPreview;
-    } catch (error) {
-        console.error('Ошибка поиска трека:', error);
-        return [];
-    }
-}
-
-async function getRandomTrack(genre = 'pop') {
-    // Список популярных исполнителей для разнообразия
-    const artists = ['Madonna', 'Michael Jackson', 'Queen', 'The Beatles', 'ABBA', 'Elton John', 'David Bowie', 'Prince', 'Whitney Houston', 'George Michael'];
-    const randomArtist = artists[Math.floor(Math.random() * artists.length)];
-    const tracks = await searchTrack(randomArtist);
-    if (tracks.length > 0) {
-        return tracks[Math.floor(Math.random() * tracks.length)];
-    }
-    return null;
-}
-
-async function getWrongAnswers(correctTrack, count = 3) {
-    const wrongAnswers = [];
-    const usedTitles = new Set([correctTrack.title]);
-    const artists = ['Adele', 'Ed Sheeran', 'Taylor Swift', 'Bruno Mars', 'Rihanna', 'Beyonce', 'Lady Gaga', 'Katy Perry', 'Justin Timberlake', 'Coldplay'];
-    
-    while (wrongAnswers.length < count) {
-        const randomArtist = artists[Math.floor(Math.random() * artists.length)];
-        const tracks = await searchTrack(randomArtist);
-        for (const track of tracks) {
-            if (!usedTitles.has(track.title)) {
-                wrongAnswers.push(track.title);
-                usedTitles.add(track.title);
-                break;
-            }
+// ===== Загрузка YouTube IFrame API =====
+function loadYouTubeAPI() {
+    return new Promise((resolve) => {
+        if (window.YT && window.YT.Player) {
+            resolve(window.YT);
+            return;
         }
-    }
-    return wrongAnswers;
+        const tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        const firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        window.onYouTubeIframeAPIReady = () => {
+            resolve(window.YT);
+        };
+    });
 }
 
 // ===== Инициализация =====
-function init() {
+async function init() {
+    await loadYouTubeAPI();
     addStartButton();
 }
 
@@ -84,64 +68,146 @@ function addStartButton() {
 
 async function startGame() {
     document.querySelector('.startButton')?.remove();
-    addControlButton();
     await loadNextRound();
 }
 
 // ===== Загрузка раунда =====
 async function loadNextRound() {
-    // Показываем загрузку
-    viewContent.innerHTML = '<div class="loading">Загрузка...</div>';
-    
-    // Получаем правильный трек
-    const correctTrack = await getRandomTrack();
-    if (!correctTrack) {
-        viewContent.innerHTML = '<div class="error">Не удалось загрузить трек. Попробуйте еще раз.</div>';
+    // 1. Получаем случайный трек из плейлиста (через прокси)
+    const tracks = await fetchPlaylistTracks();
+    if (!tracks || tracks.length === 0) {
+        viewContent.innerHTML = '<div class="error">Не удалось загрузить треки. Попробуйте позже.</div>';
         return;
     }
+    
+    // Выбираем случайный трек как правильный ответ
+    const correctTrack = tracks[Math.floor(Math.random() * tracks.length)];
     state.currentTrack = correctTrack;
 
-    // Получаем неправильные ответы
-    const wrongAnswers = await getWrongAnswers(correctTrack);
-    state.options = [correctTrack.title, ...wrongAnswers];
+    // 2. Генерируем неправильные варианты
+    state.options = generateOptions(correctTrack.title, tracks);
     
-    // Перемешиваем варианты
-    state.options = state.options.sort(() => Math.random() - 0.5);
-
-    // Обновляем видео/аудио
-    updateVideoElement(correctTrack.preview);
+    // 3. Создаем или обновляем плеер
+    createOrUpdatePlayer(correctTrack.videoId);
     
-    // Обновляем кнопки
+    // 4. Обновляем кнопки
     updateButtons();
     
-    // Запускаем таймер
+    // 5. Запускаем таймер
     startTimer();
 }
 
-function updateVideoElement(previewUrl) {
+// ===== Получение треков из плейлиста YouTube =====
+async function fetchPlaylistTracks() {
+    try {
+        // Используем прокси для обхода CORS
+        const response = await fetch(`${CONFIG.PROXY_URL}?endpoint=playlistItems&part=snippet&playlistId=${CONFIG.PLAYLIST_ID}&maxResults=20`);
+        const data = await response.json();
+        
+        // Преобразуем данные в удобный формат
+        return data.items.map(item => ({
+            title: item.snippet.title,
+            videoId: item.snippet.resourceId.videoId,
+            channelTitle: item.snippet.channelTitle
+        })).filter(track => track.videoId);
+    } catch (error) {
+        console.error('Ошибка загрузки плейлиста:', error);
+        return [];
+    }
+}
+
+// ===== Генерация вариантов ответа =====
+function generateOptions(correctTitle, allTracks) {
+    const options = [correctTitle];
+    const otherTitles = allTracks
+        .map(t => t.title)
+        .filter(title => title !== correctTitle);
+
+    // Перемешиваем и берем 3 неправильных ответа
+    const shuffled = otherTitles.sort(() => 0.5 - Math.random());
+    while (options.length < 4 && shuffled.length > 0) {
+        const wrongAnswer = shuffled.pop();
+        if (!options.includes(wrongAnswer)) {
+            options.push(wrongAnswer);
+        }
+    }
+
+    // Перемешиваем итоговый список
+    return options.sort(() => 0.5 - Math.random());
+}
+
+// ===== Создание или обновление плеера =====
+function createOrUpdatePlayer(videoId) {
     // Очищаем область
     viewContent.innerHTML = '';
     
-    // Создаем видео элемент (или аудио, если видео нет)
-    // Deezer предоставляет только аудио-превью, поэтому используем audio
-    const audio = document.createElement('audio');
-    audio.setAttribute('src', previewUrl);
-    audio.setAttribute('autoplay', '');
-    audio.setAttribute('controls', 'false');
-    audio.classList.add('video'); // Используем тот же класс для стилизации
-    audio.loop = false;
-    viewContent.appendChild(audio);
+    // Создаем контейнер для плеера
+    const playerContainer = document.createElement('div');
+    playerContainer.id = 'youtube-player';
+    viewContent.appendChild(playerContainer);
     
-    // Добавляем кнопку управления
-    addControlButton();
+    // Создаем или обновляем плеер
+    if (state.player) {
+        state.player.loadVideoById({
+            videoId: videoId,
+            startSeconds: CONFIG.START_TIME
+        });
+    } else {
+        state.player = new YT.Player('youtube-player', {
+            height: '100%',
+            width: '100%',
+            videoId: videoId,
+            playerVars: {
+                'autoplay': 0, // Автовоспроизведение отключено (браузеры блокируют)
+                'controls': 0, // Скрываем стандартные элементы управления
+                'disablekb': 1,
+                'modestbranding': 1,
+                'rel': 0,
+                'start': CONFIG.START_TIME, // Начинаем с 15 секунды
+                'end': CONFIG.START_TIME + CONFIG.ROUND_DURATION // Заканчиваем через 60 секунд
+            },
+            events: {
+                'onReady': onPlayerReady,
+                'onStateChange': onPlayerStateChange
+            }
+        });
+    }
 }
 
+function onPlayerReady(event) {
+    // Плеер готов, можно запускать воспроизведение
+    event.target.playVideo();
+}
+
+function onPlayerStateChange(event) {
+    // Можно добавить логику для отслеживания состояния
+}
+
+// ===== Управление плеером =====
+function addControlButton() {
+    const btn = createButton('', '');
+    btn.id = 'controlButton';
+    btn.innerHTML = '<i class="fa fa-play"></i>';
+    viewContent.appendChild(btn);
+    btn.addEventListener('click', () => togglePlay());
+}
+
+function togglePlay() {
+    if (!state.player) return;
+    if (state.player.getPlayerState() === YT.PlayerState.PLAYING) {
+        state.player.pauseVideo();
+        document.querySelector('#controlButton').innerHTML = '<i class="fa fa-play"></i>';
+    } else {
+        state.player.playVideo();
+        document.querySelector('#controlButton').innerHTML = '<i class="fa fa-pause"></i>';
+    }
+}
+
+// ===== Обновление кнопок ответов =====
 function updateButtons() {
-    // Очищаем блок кнопок
     buttonsBlock.innerHTML = '';
     buttonsBlock.style.display = 'grid';
     
-    // Создаем кнопки для каждого варианта
     state.options.forEach(option => {
         const btn = createButton(option, 'Buttons');
         btn.style.display = 'block';
@@ -149,37 +215,18 @@ function updateButtons() {
     });
 }
 
-// ===== Управление аудио =====
-function addControlButton() {
-    const btn = createButton('', '');
-    btn.id = 'controlButton';
-    btn.innerHTML = '<i class="fa fa-play"></i>';
-    viewContent.appendChild(btn);
-    btn.addEventListener('click', () => togglePlay(btn));
-}
-
-function togglePlay(btn) {
-    const audio = viewContent.querySelector('audio');
-    if (!audio) return;
-    if (audio.paused) {
-        audio.play();
-        btn.innerHTML = '<i class="fa fa-pause"></i>';
-    } else {
-        audio.pause();
-        btn.innerHTML = '<i class="fa fa-play"></i>';
-    }
-}
-
 // ===== Таймер =====
 function startTimer() {
-    state.timeLeft = 30;
+    state.timeLeft = CONFIG.ROUND_DURATION;
     timerValue.textContent = state.timeLeft;
     updateProgress();
+    
     clearInterval(state.timer);
     state.timer = setInterval(() => {
         state.timeLeft--;
         timerValue.textContent = state.timeLeft;
         updateProgress();
+        
         if (state.timeLeft <= 0) {
             clearInterval(state.timer);
             timeOut();
@@ -188,7 +235,7 @@ function startTimer() {
 }
 
 function updateProgress() {
-    const percent = (state.timeLeft / 30) * 100;
+    const percent = (state.timeLeft / CONFIG.ROUND_DURATION) * 100;
     progressFill.style.width = `${percent}%`;
 }
 
@@ -202,12 +249,18 @@ function timeOut() {
     setTimeout(nextRound, 1500);
 }
 
-// ===== Игровой раунд =====
-buttonsBlock.addEventListener('click', async (e) => {
+// ===== Обработка ответа =====
+buttonsBlock.addEventListener('click', (e) => {
     if (!e.target.classList.contains('Buttons')) return;
+    
     const target = e.target;
     const selectedAnswer = target.textContent;
     clearInterval(state.timer);
+    
+    // Останавливаем воспроизведение
+    if (state.player && state.player.getPlayerState() === YT.PlayerState.PLAYING) {
+        state.player.pauseVideo();
+    }
 
     if (selectedAnswer === state.currentTrack.title) {
         target.classList.add('trueAnswer');
@@ -217,19 +270,23 @@ buttonsBlock.addEventListener('click', async (e) => {
         target.classList.add('falseAnswer');
         // Показываем правильный ответ
         document.querySelectorAll('.Buttons').forEach(btn => {
-            if (btn.textContent === state.currentTrack.title) btn.classList.add('trueAnswer');
+            if (btn.textContent === state.currentTrack.title) {
+                btn.classList.add('trueAnswer');
+            }
         });
     }
+    
     setTimeout(nextRound, 1500);
 });
 
+// ===== Следующий раунд =====
 async function nextRound() {
     // Сброс классов
     document.querySelectorAll('.Buttons').forEach(btn => {
         btn.classList.remove('trueAnswer', 'falseAnswer');
     });
 
-    // Проверка на конец игры (например, после 10 раундов)
+    // Проверка на конец игры
     if (state.guessedSongs >= 10) {
         endGame();
         return;
@@ -239,8 +296,12 @@ async function nextRound() {
     await loadNextRound();
 }
 
+// ===== Конец игры =====
 function endGame() {
     clearInterval(state.timer);
+    if (state.player) {
+        state.player.destroy();
+    }
     finalScore.textContent = state.guessedSongs;
     finalScreen.classList.remove('hidden');
     document.querySelector('#restartButton').addEventListener('click', () => location.reload());
