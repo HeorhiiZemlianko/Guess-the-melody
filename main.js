@@ -1,4 +1,4 @@
-// main.js
+// main.js 
 
 // ===== Конфигурация =====
 const CONFIG = {
