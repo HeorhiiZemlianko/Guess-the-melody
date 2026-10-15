@@ -360,7 +360,21 @@ function endGame() {
     if (state.player) {
         state.player.destroy();
     }
+    
     finalScore.textContent = state.guessedSongs;
+
+    // Оценка
+    const ratingElement = document.getElementById('finalRating');
+    if (state.guessedSongs >= 9) {
+        ratingElement.textContent = '🏆 Вы музыкальный гений!';
+    } else if (state.guessedSongs >= 7) {
+        ratingElement.textContent = '🎵 Отличный слух!';
+    } else if (state.guessedSongs >= 4) {
+        ratingElement.textContent = '🎧 Неплохо, но можно лучше!';
+    } else {
+        ratingElement.textContent = '📻 Попробуйте ещё раз!';
+    }
+    
     finalScreen.classList.remove('hidden');
     document.querySelector('#restartButton').addEventListener('click', () => location.reload());
 }
