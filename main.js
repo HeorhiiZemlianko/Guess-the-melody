@@ -7,7 +7,7 @@ const state = {
     currentTrack: null,
     options: []
 };
-
+ 
 // ===== DOM-элементы =====
 const viewContent = document.querySelector('#viewContent');
 const buttonsBlock = document.querySelector('#ButtonsBlock');
