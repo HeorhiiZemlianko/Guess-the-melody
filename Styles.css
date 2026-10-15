@@ -1,134 +1,273 @@
-*{
-    padding: 0;
+:root {
+    --primary: #2a9d8f;
+    --primary-dark: #21867a;
+    --danger: #e63946;
+    --success: #2ecc71;
+    --bg-dark: #0a0a0a;
+    --text-light: #f1faee;
+    --card-bg: rgba(255, 255, 255, 0.08);
+    --border-radius: 16px;
+    --transition: 0.3s ease;
+}
+
+* {
     margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 body {
-    background-color: #000;
+    font-family: 'Montserrat', sans-serif;
+    background: var(--bg-dark);
+    color: var(--text-light);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
 }
 
-source, .video  {
+.game-container {
     width: 100%;
-    height: 75%;
-    position: absolute;
+    max-width: 900px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    position: relative;
 }
 
- .blur{
-     -webkit-filter: blur(300px);
-     -ms-filter: blur(300px);
-     filter: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg'><filter id='blur'><feGaussianBlur stdDeviation='1'/></filter></svg>#blur");
- }
+/* Заголовок */
+.game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    backdrop-filter: blur(10px);
+    margin-bottom: 20px;
+    font-weight: 700;
+}
 
-.wrapper {
+.score, .timer {
+    font-size: 1.2rem;
+}
+
+.timer {
+    color: var(--primary);
+}
+
+/* Прогресс-бар */
+.progress-bar {
+    flex: 1;
+    height: 8px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 4px;
+    margin: 0 20px;
+    overflow: hidden;
+}
+
+#progressFill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--primary), #4ecdc4);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+/* Видео/аудио область */
+#viewContent {
+    flex: 1;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    background: #000;
+}
+
+#viewContent video,
+#viewContent source {
     width: 100%;
     height: 100%;
+    object-fit: cover;
     position: absolute;
-    left: 50%;
-    transform: translate(-50%);
-    background: cadetblue;
+    top: 0;
+    left: 0;
 }
 
-.startButton{
-    border-radius: 4px;
-    -webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.08);
-    -moz-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.08);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.08);
-    color: #fff;
-    display:block;
-    width:220px;
-    height: 50px;
-    text-align: center;
-    font-size: 14px;
-    padding: 8px 16px;
-    text-decoration: none;
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.075);
-    background: silver;
-
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+/* Кнопки ответов */
+#ButtonsBlock {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-top: 20px;
 }
-
-.startButton {
-    background-color: rgb( 43, 153, 91 );
-    border: 1px solid rgb( 33, 126, 74 );
-}
-
-/*.startButton:hover {
-    background-color: rgb( 75, 183, 141 );
-}*/
 
 .Buttons {
-    background: transparent;
-    border: 1px solid royalblue;
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.6);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.08);
-    padding: 10px;
-    font-size: 20px;
-    position: relative;
-    color: white;
-    left: 50%;
-    transform: translate(-50%);
-    margin-top: 5px;
-    display: block;
-    width: 640px;
-    top: 60px;
-    -webkit-border-radius: 8px;
-    -moz-border-radius: 8px;
-    border-radius: 15px;
-    transition: all 0.5s;
-}
-
-.Buttons:first-child {
-    margin-top: 0;
+    padding: 16px 20px;
+    font-size: 1rem;
+    font-weight: 600;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 12px;
+    background: var(--card-bg);
+    color: var(--text-light);
+    cursor: pointer;
+    transition: all var(--transition);
+    text-align: center;
+    line-height: 1.4;
+    backdrop-filter: blur(5px);
 }
 
 .Buttons:hover {
-    border-radius: 10px;
+    background: rgba(255,255,255,0.15);
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(42, 157, 143, 0.3);
 }
 
-#ButtonsBlock {
-    width: 100%;
-    height: 50%;
-    position: absolute;
-    margin-top: 200px;
-    top: 50%;
+.Buttons:active {
+    transform: translateY(0);
 }
 
-#controlButton {
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.075);
-    position: absolute;
-    transform: translate(-50%);
-    left: 50%;
-    top: 40%;
-    padding: 15px;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.08);
-    color: white;
-    border-radius: 5px;
-    background: transparent;
-    border: 1px solid royalblue;
-    transition: all .5s;
-}
-
-#controlButton:hover {
-    border-radius: 10px;
+/* Правильный/неправильный ответ */
+.trueAnswer {
+    background: var(--success) !important;
+    border-color: var(--success) !important;
+    color: #0a0a0a !important;
+    animation: pulse 0.5s ease;
 }
 
 .falseAnswer {
-    background: red;
+    background: var(--danger) !important;
+    border-color: var(--danger) !important;
+    animation: shake 0.5s ease;
 }
 
-.trueAnswer {
-    background: lawngreen;
-    color: darkgreen;
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
 }
 
-#counter {
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
+}
+
+/* Кнопка управления (play/pause) */
+#controlButton {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 14px 24px;
+    font-size: 1.5rem;
+    border: none;
+    border-radius: 50px;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    transition: all var(--transition);
+    z-index: 10;
+}
+
+#controlButton:hover {
+    background: var(--primary);
+    transform: translateX(-50%) scale(1.1);
+}
+
+/* Стартовая кнопка */
+.startButton {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 60px;
-    color: whitesmoke;
+    padding: 18px 48px;
+    font-size: 1.3rem;
+    font-weight: 700;
+    border: none;
+    border-radius: 50px;
+    background: linear-gradient(135deg, var(--primary), #4ecdc4);
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(42, 157, 143, 0.4);
+    transition: all var(--transition);
+    z-index: 20;
+}
+
+.startButton:hover {
+    transform: translate(-50%, -50%) scale(1.05);
+    box-shadow: 0 15px 40px rgba(42, 157, 143, 0.6);
+}
+
+/* Финальный экран */
+#finalScreen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.9);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    z-index: 30;
+    backdrop-filter: blur(10px);
+    border-radius: var(--border-radius);
+}
+
+#finalScreen h2 {
+    font-size: 2.5rem;
+    color: var(--primary);
+}
+
+#finalScreen p {
+    font-size: 1.5rem;
+}
+
+#restartButton {
+    padding: 14px 40px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    border: none;
+    border-radius: 50px;
+    background: var(--primary);
+    color: white;
+    cursor: pointer;
+    transition: all var(--transition);
+}
+
+#restartButton:hover {
+    background: var(--primary-dark);
+    transform: scale(1.05);
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Адаптивность */
+@media (max-width: 600px) {
+    #ButtonsBlock {
+        grid-template-columns: 1fr;
+    }
+    .game-header {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .progress-bar {
+        order: 3;
+        width: 100%;
+        margin: 0;
+    }
+    .startButton {
+        padding: 14px 30px;
+        font-size: 1.1rem;
+    }
 }
