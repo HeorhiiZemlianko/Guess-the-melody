@@ -6,7 +6,7 @@ const CONFIG = {
     ROUND_DURATION: 60, // Длительность раунда в секундах
     START_TIME: 15, // С какого момента начинать воспроизведение (в секундах)
     GENRES: ['pop', 'rock', 'hip-hop', 'electronic', 'jazz'], // Жанры для поиска
-    PLAYLIST_ID: 'PLFgquLnL59alCl_2TQvOiD5Vgm1hCaGSI' // Пример ID плейлиста
+    PLAYLIST_ID: 'PL45_r-J4SdAFM0PbG6QeqVpLu975CK9Ip' // Пример ID плейлиста
 };
 
 // ===== Состояние игры =====
