@@ -126,8 +126,17 @@ function togglePlay() {
 
 // ===== Загрузка раунда =====
 async function loadNextRound() {
+    // Показываем спиннер загрузки
+    const spinner = document.createElement('div');
+    spinner.className = 'spinner';
+    viewContent.appendChild(spinner);
+
     // 1. Получаем треки из случайного плейлиста
     const tracks = await fetchPlaylistTracks();
+
+    // Убираем спиннер
+    spinner.remove();
+
     if (!tracks || tracks.length < 4) {
         viewContent.innerHTML = '<div class="error">Не удалось загрузить треки. Попробуйте позже.</div>';
         return;
