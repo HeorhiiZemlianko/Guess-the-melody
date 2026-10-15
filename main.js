@@ -45,6 +45,7 @@ const state = {
     currentTrack: null,
     options: [],
     guessedSongs: 0,
+    roundsPlayed: 0,
     timer: null,
     timeLeft: CONFIG.ROUND_DURATION
 };
@@ -334,7 +335,9 @@ async function nextRound() {
         btn.classList.remove('trueAnswer', 'falseAnswer');
     });
 
-    if (state.guessedSongs >= 10) {
+    state.roundsPlayed++;
+
+    if (state.roundsPlayed >= 10) {
         endGame();
         return;
     }
