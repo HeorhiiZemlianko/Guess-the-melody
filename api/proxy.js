@@ -1,5 +1,3 @@
-// api/proxy.js
-
 export default async function handler(req, res) {
     // 1. CORS-заголовки для всех ответов
     res.setHeader('Access-Control-Allow-Origin', '*');
