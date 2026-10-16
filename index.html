@@ -30,6 +30,11 @@
                     <span class="hud-label">Время</span>
                     <span id="timerValue" class="hud-value">60</span>
                 </div>
+                <div class="hud-item">
+                    <i class="fa-solid fa-flag-checkered"></i>
+                    <span class="hud-label">Раунд</span>
+                    <span id="roundValue" class="hud-value">0/0</span>
+                </div>
                 <div class="progress-bar"><div id="progressFill"></div></div>
             </div>
 
@@ -47,18 +52,52 @@
 
             <section id="ButtonsBlock" class="answers"></section>
 
-            <!-- Стартовый экран -->
+            <!-- Стартовый экран с выбором сложности -->
             <div id="startScreen" class="start-screen">
-                <div class="start-card">
+                <div class="start-card start-card--wide">
                     <h1>Угадай <span>мелодию</span></h1>
-                    <p>Слушай отрывок, выбирай правильный ответ и набирай очки. 10 раундов — покажи свой музыкальный вкус!</p>
-                    <button id="startButton" class="btn btn-primary">
-                        <i class="fa-solid fa-play"></i> Начать игру
-                    </button>
-                    <div class="start-hints">
-                        <div><i class="fa-solid fa-headphones"></i> Хит-плейлисты</div>
-                        <div><i class="fa-solid fa-trophy"></i> 10 раундов</div>
-                        <div><i class="fa-solid fa-bolt"></i> 60 секунд на трек</div>
+                    <p>Выбери уровень сложности и покажи свой музыкальный вкус!</p>
+
+                    <div class="difficulty-grid">
+                        <button class="difficulty-card" data-difficulty="easy">
+                            <i class="fa-solid fa-leaf"></i>
+                            <h3>Лёгкий</h3>
+                            <ul>
+                                <li>4 варианта ответа</li>
+                                <li>60 секунд на трек</li>
+                                <li>10 раундов</li>
+                            </ul>
+                        </button>
+
+                        <button class="difficulty-card" data-difficulty="medium">
+                            <i class="fa-solid fa-fire"></i>
+                            <h3>Средний</h3>
+                            <ul>
+                                <li>4 варианта ответа</li>
+                                <li>30 секунд на трек</li>
+                                <li>15 раундов</li>
+                            </ul>
+                        </button>
+
+                        <button class="difficulty-card" data-difficulty="hard">
+                            <i class="fa-solid fa-skull"></i>
+                            <h3>Сложный</h3>
+                            <ul>
+                                <li>6 вариантов ответа</li>
+                                <li>15 секунд на трек</li>
+                                <li>20 раундов</li>
+                            </ul>
+                        </button>
+
+                        <button class="difficulty-card" data-difficulty="hardcore">
+                            <i class="fa-solid fa-crown"></i>
+                            <h3>Хардкор</h3>
+                            <ul>
+                                <li>Ввод названия вручную</li>
+                                <li>60 секунд на трек</li>
+                                <li>10 раундов</li>
+                            </ul>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -67,7 +106,8 @@
             <div id="finalScreen" class="final-screen hidden">
                 <div class="final-card">
                     <h2>Игра завершена!</h2>
-                    <p class="final-score">Вы угадали <span id="finalScore">0</span> из 10</p>
+                    <p class="final-difficulty">Сложность: <span id="finalDifficulty">—</span></p>
+                    <p class="final-score">Вы угадали <span id="finalScore">0</span> из <span id="finalTotal">10</span></p>
                     <p id="finalRating" class="final-rating"></p>
                     <div class="final-actions">
                         <button id="restartButton" class="btn btn-primary">
@@ -92,7 +132,7 @@
                 <a href="https://www.youtube.com" target="_blank" rel="noopener noreferrer">
                     <i class="fa-brands fa-youtube"></i> Видео: YouTube
                 </a>
-                <a href="https://github.com/HeorhiiZemlianko/HeorhiiZemlianko" target="_blank" rel="noopener noreferrer">
+                <a href="https://github.com/HeorhiiZemlianko/Guess-the-melody" target="_blank" rel="noopener noreferrer">
                     <i class="fa-brands fa-github"></i> GitHub
                 </a>
             </div>
