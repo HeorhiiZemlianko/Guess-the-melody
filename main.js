@@ -76,6 +76,7 @@ const state = {
     bestStreak: 0,     // Лучшая серия за игру
     highScore: null,    // Рекорд из localStorage
     hintsUsed: new Set(),  // какие подсказки использованы в текущем раунде
+    roundResults: [],  // 'correct' | 'wrong' | 'timeout' | 'skipped'
 };
 
 // ===== DOM =====
@@ -103,6 +104,7 @@ const highScoreDiff   = document.querySelector('#highScoreDiff');
 const exitButton      = document.querySelector('#exitButton');
 const hintsRow    = document.querySelector('#hintsRow');
 const artistHint  = document.querySelector('#artistHint');
+const roundsProgress = document.querySelector('#roundsProgress');
 
 // ===== Утилиты =====
 const createButton = (text, className) => {
@@ -250,6 +252,10 @@ async function startGame(difficultyKey) {
     state.bestStreak = 0;
     state.timeLeft = state.difficulty.duration;
     state.hintsUsed = new Set();
+    state.roundResults = [];
+    
+    roundsProgress.classList.remove('hidden');
+    renderRoundsProgress();
 
     updateScoreDisplay();
     updateStreakDisplay();
@@ -296,6 +302,8 @@ function returnToMenu() {
     exitButton.classList.add('hidden');
     startScreen.classList.remove('hidden');
     hintsRow.classList.add('hidden');
+    roundsProgress.classList.add('hidden');
+    state.roundResults = [];
     artistHint.classList.add('hidden');
     artistHint.innerHTML = '';
     state.hintsUsed = new Set();
@@ -801,7 +809,9 @@ function applySkipHint() {
     document.querySelectorAll('.Buttons').forEach(btn => {
         if (btn.textContent === state.currentTrack.title) btn.classList.add('trueAnswer');
     });
-
+    state.roundResults.push('skipped');
+    renderRoundsProgress();
+    
     setTimeout(nextRound, 1200);
     return true;
 }
@@ -838,7 +848,7 @@ function extractArtistFromTitle(title) {
 }
 
 // ===== Применение результата (общий код для обычного и хардкора) =====
-function applyRoundResult(isCorrect) {
+function applyRoundResult(isCorrect, kind) {
     const points = calculatePoints(isCorrect, state.timeLeft, state.difficulty.duration, state.streak);
 
     if (isCorrect) {
@@ -850,6 +860,11 @@ function applyRoundResult(isCorrect) {
         state.score = Math.max(0, state.score + points);
         state.streak = 0;
     }
+
+    // Записываем результат раунда для точек прогресса
+    if (!kind) kind = isCorrect ? 'correct' : 'wrong';
+    state.roundResults.push(kind);
+    renderRoundsProgress();
 
     updateScoreDisplay();
     updateStreakDisplay();
@@ -934,9 +949,32 @@ function updateProgress() {
     progressFill.style.width = `${Math.max(0, percent)}%`;
 }
 
+// ===== Обновлялись на каждом раунде =====
 function updateRoundCounter() {
     const current = Math.min(state.roundsPlayed + 1, state.difficulty.totalRounds);
     roundValue.textContent = `${current}/${state.difficulty.totalRounds}`;
+    renderRoundsProgress();
+}
+
+function renderRoundsProgress() {
+    if (!roundsProgress) return;
+    const total = state.difficulty.totalRounds;
+    roundsProgress.innerHTML = '';
+
+    for (let i = 0; i < total; i++) {
+        const dot = document.createElement('span');
+        dot.className = 'round-dot';
+
+        const result = state.roundResults[i];
+
+        if (result) {
+            dot.classList.add(`round-dot--${result}`);
+        } else if (i === state.roundsPlayed && state.running) {
+            dot.classList.add('round-dot--current');
+        }
+
+        roundsProgress.appendChild(dot);
+    }
 }
 
 function timeOut() {
@@ -944,7 +982,7 @@ function timeOut() {
     state.locked = true;
 
     // Применяем как "неправильный" ответ (штраф + сброс серии)
-    applyRoundResult(false);
+    applyRoundResult(false, 'timeout');
 
     if (state.difficulty.hardcore) {
         const input = document.querySelector('#hardcoreInput');
