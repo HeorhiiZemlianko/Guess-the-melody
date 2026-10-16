@@ -2,44 +2,17 @@
 
 // ===== Уровни сложности =====
 const DIFFICULTIES = {
-    easy: {
-        key: 'easy',
-        name: 'Лёгкий',
-        optionsCount: 4,
-        duration: 60,
-        totalRounds: 10,
-        hardcore: false
-    },
-    medium: {
-        key: 'medium',
-        name: 'Средний',
-        optionsCount: 4,
-        duration: 30,
-        totalRounds: 15,
-        hardcore: false
-    },
-    hard: {
-        key: 'hard',
-        name: 'Сложный',
-        optionsCount: 6,
-        duration: 15,
-        totalRounds: 20,
-        hardcore: false
-    },
-    hardcore: {
-        key: 'hardcore',
-        name: 'Хардкор',
-        optionsCount: 0,
-        duration: 60,
-        totalRounds: 10,
-        hardcore: true
-    }
+    easy:     { key: 'easy',     name: 'Лёгкий',   optionsCount: 4, duration: 60, totalRounds: 10, hardcore: false, multiplier: 1    },
+    medium:   { key: 'medium',   name: 'Средний',  optionsCount: 4, duration: 30, totalRounds: 15, hardcore: false, multiplier: 1.25 },
+    hard:     { key: 'hard',     name: 'Сложный',  optionsCount: 6, duration: 15, totalRounds: 20, hardcore: false, multiplier: 1.5  },
+    hardcore: { key: 'hardcore', name: 'Хардкор',  optionsCount: 0, duration: 60, totalRounds: 10, hardcore: true,  multiplier: 2    }
 };
 
 // ===== Конфигурация =====
 const CONFIG = {
     PROXY_URL: 'https://guessthemelody-482baoika-wild-happines.vercel.app/api/proxy',
     START_TIME: 15,
+    HIGH_SCORE_KEY: 'musicBattleHighScore_v1',
     PLAYLIST_IDS: [
         'PL45_r-J4SdAFM0PbG6QeqVpLu975CK9Ip',
         'PL0GvsLQil0MmYC96KEs_7dTNsLm1PS6JX',
@@ -85,22 +58,35 @@ const state = {
     timeLeft: 60,
     running: false,
     locked: false,
-    difficulty: DIFFICULTIES.easy
+    difficulty: DIFFICULTIES.easy,
+    score: 0,          // Общий счёт (очки)
+    streak: 0,         // Текущая серия
+    bestStreak: 0,     // Лучшая серия за игру
+    highScore: null    // Рекорд из localStorage
 };
 
 // ===== DOM =====
 const viewContent     = document.querySelector('#viewContent');
 const buttonsBlock    = document.querySelector('#ButtonsBlock');
 const scoreValue      = document.querySelector('#scoreValue');
+const streakValue     = document.querySelector('#streakValue');
+const streakHud       = document.querySelector('#streakHud');
 const timerValue      = document.querySelector('#timerValue');
 const roundValue      = document.querySelector('#roundValue');
 const progressFill    = document.querySelector('#progressFill');
+const pointsPopup     = document.querySelector('#pointsPopup');
 const startScreen     = document.querySelector('#startScreen');
 const finalScreen     = document.querySelector('#finalScreen');
 const finalScore      = document.querySelector('#finalScore');
+const finalGuessed    = document.querySelector('#finalGuessed');
 const finalTotal      = document.querySelector('#finalTotal');
+const finalBestStreak = document.querySelector('#finalBestStreak');
 const finalRating     = document.querySelector('#finalRating');
 const finalDifficulty = document.querySelector('#finalDifficulty');
+const newRecordBadge  = document.querySelector('#newRecordBadge');
+const highScoreBadge  = document.querySelector('#highScoreBadge');
+const highScoreValue  = document.querySelector('#highScoreValue');
+const highScoreDiff   = document.querySelector('#highScoreDiff');
 const exitButton      = document.querySelector('#exitButton');
 
 // ===== Утилиты =====
@@ -122,19 +108,111 @@ function loadYouTubeAPI() {
     });
 }
 
+// ===== localStorage: рекорд =====
+function loadHighScore() {
+    try {
+        const raw = localStorage.getItem(CONFIG.HIGH_SCORE_KEY);
+        return raw ? JSON.parse(raw) : null;
+    } catch {
+        return null;
+    }
+}
+
+function saveHighScore(score, difficultyName) {
+    const current = loadHighScore();
+    if (!current || score > current.score) {
+        const record = {
+            score,
+            difficulty: difficultyName,
+            date: new Date().toISOString()
+        };
+        try {
+            localStorage.setItem(CONFIG.HIGH_SCORE_KEY, JSON.stringify(record));
+        } catch {}
+        return true; // Новый рекорд
+    }
+    return false;
+}
+
+function refreshHighScoreBadge() {
+    state.highScore = loadHighScore();
+    if (state.highScore && state.highScore.score > 0) {
+        highScoreBadge.classList.remove('hidden');
+        highScoreValue.textContent = state.highScore.score;
+        highScoreDiff.textContent = `· ${state.highScore.difficulty}`;
+    } else {
+        highScoreBadge.classList.add('hidden');
+    }
+}
+
+// ===== Очки =====
+function getStreakMultiplier(streak) {
+    if (streak >= 10) return 3;
+    if (streak >= 5)  return 2;
+    if (streak >= 3)  return 1.5;
+    return 1;
+}
+
+/**
+ * Считает очки за раунд.
+ * @param {boolean} isCorrect
+ * @param {number} timeLeft — сколько секунд осталось
+ * @param {number} duration — длительность раунда
+ * @param {number} currentStreak — серия ДО этого ответа
+ */
+function calculatePoints(isCorrect, timeLeft, duration, currentStreak) {
+    if (!isCorrect) return -50;
+
+    const base = 100;
+    const speedBonus = Math.round(Math.max(0, Math.min(1, timeLeft / duration)) * 100);
+    const diffMult = state.difficulty.multiplier;
+    const streakMult = getStreakMultiplier(currentStreak);
+
+    return Math.round((base + speedBonus) * diffMult * streakMult);
+}
+
+function updateScoreDisplay() {
+    scoreValue.textContent = state.score;
+}
+
+function updateStreakDisplay() {
+    streakValue.textContent = state.streak;
+    if (state.streak >= 3) {
+        streakHud.classList.add('active');
+    } else {
+        streakHud.classList.remove('active');
+    }
+}
+
+function showPointsPopup(points, isCorrect) {
+    pointsPopup.textContent = (points > 0 ? '+' : '') + points;
+    pointsPopup.classList.remove('visible', 'negative');
+
+    // Принудительный reflow, чтобы анимация сработала заново
+    void pointsPopup.offsetWidth;
+
+    if (!isCorrect) pointsPopup.classList.add('negative');
+    pointsPopup.classList.add('visible');
+
+    clearTimeout(pointsPopup._t);
+    pointsPopup._t = setTimeout(() => {
+        pointsPopup.classList.remove('visible', 'negative');
+    }, 1500);
+}
+
+// ===== Инициализация =====
 async function init() {
     await loadYouTubeAPI();
+    refreshHighScoreBadge();
     wireEvents();
 }
 
 function wireEvents() {
-    // Кнопки выбора сложности
     document.querySelectorAll('.difficulty-card').forEach(card => {
         card.addEventListener('click', () => startGame(card.dataset.difficulty));
     });
 
     document.querySelector('#restartButton').addEventListener('click', () => {
-        // Перезапуск с той же сложностью
         startGame(state.difficulty.key);
     });
     document.querySelector('#menuButton').addEventListener('click', returnToMenu);
@@ -144,16 +222,19 @@ function wireEvents() {
 
 // ===== Старт игры =====
 async function startGame(difficultyKey) {
-    // Выбираем конфиг сложности
     state.difficulty = DIFFICULTIES[difficultyKey] || DIFFICULTIES.easy;
 
     state.running = true;
     state.locked = false;
     state.guessedSongs = 0;
     state.roundsPlayed = 0;
+    state.score = 0;
+    state.streak = 0;
+    state.bestStreak = 0;
     state.timeLeft = state.difficulty.duration;
 
-    scoreValue.textContent = '0';
+    updateScoreDisplay();
+    updateStreakDisplay();
     timerValue.textContent = state.difficulty.duration;
     updateRoundCounter();
     updateProgress();
@@ -177,16 +258,21 @@ function returnToMenu() {
 
     state.guessedSongs = 0;
     state.roundsPlayed = 0;
+    state.score = 0;
+    state.streak = 0;
+    state.bestStreak = 0;
     state.options = [];
     state.currentTrack = null;
 
-    scoreValue.textContent = '0';
+    updateScoreDisplay();
+    updateStreakDisplay();
     timerValue.textContent = '—';
     roundValue.textContent = '0/0';
     progressFill.style.width = '0%';
     buttonsBlock.innerHTML = '';
     buttonsBlock.classList.remove('hardcore-mode');
 
+    refreshHighScoreBadge();
     finalScreen.classList.add('hidden');
     exitButton.classList.add('hidden');
     startScreen.classList.remove('hidden');
@@ -261,7 +347,7 @@ async function fetchPlaylistTracks() {
 // ===== Варианты ответа =====
 function generateOptions(correctTrack, allTracks) {
     const count = state.difficulty.optionsCount;
-    if (count === 0) return []; // Хардкор — без вариантов
+    if (count === 0) return [];
 
     const seen = new Set([correctTrack.videoId]);
     const options = [{ title: correctTrack.title, videoId: correctTrack.videoId }];
@@ -409,10 +495,7 @@ function submitHardcoreAnswer() {
     if (!input || input.disabled) return;
 
     const userAnswer = input.value.trim();
-    if (!userAnswer) {
-        input.focus();
-        return;
-    }
+    if (!userAnswer) { input.focus(); return; }
 
     state.locked = true;
     clearInterval(state.timer);
@@ -427,10 +510,9 @@ function submitHardcoreAnswer() {
 
     const isCorrect = checkHardcoreAnswer(userAnswer, state.currentTrack.title);
 
+    applyRoundResult(isCorrect);
     if (isCorrect) {
         input.classList.add('trueAnswer');
-        state.guessedSongs++;
-        scoreValue.textContent = state.guessedSongs;
     } else {
         input.classList.add('falseAnswer');
     }
@@ -443,7 +525,26 @@ function submitHardcoreAnswer() {
     setTimeout(nextRound, 2400);
 }
 
-// ===== Проверка ответа хардкор =====
+// ===== Применение результата (общий код для обычного и хардкора) =====
+function applyRoundResult(isCorrect) {
+    const points = calculatePoints(isCorrect, state.timeLeft, state.difficulty.duration, state.streak);
+
+    if (isCorrect) {
+        state.guessedSongs++;
+        state.score += points;
+        state.streak++;
+        state.bestStreak = Math.max(state.bestStreak, state.streak);
+    } else {
+        state.score = Math.max(0, state.score + points);
+        state.streak = 0;
+    }
+
+    updateScoreDisplay();
+    updateStreakDisplay();
+    showPointsPopup(points, isCorrect);
+}
+
+// ===== Проверка хардкора =====
 function normalizeStr(str) {
     return String(str)
         .toLowerCase()
@@ -459,15 +560,12 @@ function checkHardcoreAnswer(userInput, correctTitle) {
     const user = normalizeStr(userInput);
     const correct = normalizeStr(correctTitle);
     if (!user || user.length < 2) return false;
-
-    // Если ответ пользователя целиком входит в правильное название
     if (correct.includes(user)) return true;
 
     const userWords = user.split(' ').filter(w => w.length >= 2);
     const correctWords = correct.split(' ').filter(w => w.length >= 2);
     if (userWords.length === 0 || correctWords.length === 0) return false;
 
-    // Сколько слов из ответа пользователя совпало с правильным названием
     const matches = userWords.filter(w =>
         correctWords.some(cw => cw === w || cw.includes(w) || w.includes(cw))
     ).length;
@@ -489,10 +587,10 @@ function handleAnswerClick(e) {
     }
 
     const selected = target.textContent;
-    if (selected === state.currentTrack.title) {
+    const isCorrect = selected === state.currentTrack.title;
+
+    if (isCorrect) {
         target.classList.add('trueAnswer');
-        state.guessedSongs++;
-        scoreValue.textContent = state.guessedSongs;
     } else {
         target.classList.add('falseAnswer');
         document.querySelectorAll('.Buttons').forEach(btn => {
@@ -500,6 +598,7 @@ function handleAnswerClick(e) {
         });
     }
 
+    applyRoundResult(isCorrect);
     setTimeout(nextRound, 1500);
 }
 
@@ -531,8 +630,10 @@ function timeOut() {
     if (state.locked) return;
     state.locked = true;
 
+    // Применяем как "неправильный" ответ (штраф + сброс серии)
+    applyRoundResult(false);
+
     if (state.difficulty.hardcore) {
-        // Для хардкора — просто показать правильный ответ
         const input = document.querySelector('#hardcoreInput');
         if (input) {
             input.disabled = true;
@@ -573,18 +674,27 @@ function endGame() {
         state.player.stopVideo();
     }
 
-    finalScore.textContent = state.guessedSongs;
+    // Заполняем финальный экран
+    finalScore.textContent = state.score;
+    finalGuessed.textContent = state.guessedSongs;
     finalTotal.textContent = state.difficulty.totalRounds;
+    finalBestStreak.textContent = state.bestStreak;
     finalDifficulty.textContent = state.difficulty.name;
 
+    // Оценка игры
     const percent = state.guessedSongs / state.difficulty.totalRounds;
     if (percent >= 0.9)       finalRating.textContent = '🏆 Вы музыкальный гений!';
     else if (percent >= 0.7)  finalRating.textContent = '🎵 Отличный слух!';
     else if (percent >= 0.4)  finalRating.textContent = '🎧 Неплохо, но можно лучше!';
     else                      finalRating.textContent = '📻 Попробуйте ещё раз!';
 
+    // Проверяем рекорд
+    const isNewRecord = saveHighScore(state.score, state.difficulty.name);
+    newRecordBadge.classList.toggle('hidden', !isNewRecord);
+
     exitButton.classList.add('hidden');
     finalScreen.classList.remove('hidden');
 }
 
+// ===== Запуск =====
 init();
