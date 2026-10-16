@@ -1,9 +1,45 @@
 // main.js
+
+// ===== Уровни сложности =====
+const DIFFICULTIES = {
+    easy: {
+        key: 'easy',
+        name: 'Лёгкий',
+        optionsCount: 4,
+        duration: 60,
+        totalRounds: 10,
+        hardcore: false
+    },
+    medium: {
+        key: 'medium',
+        name: 'Средний',
+        optionsCount: 4,
+        duration: 30,
+        totalRounds: 15,
+        hardcore: false
+    },
+    hard: {
+        key: 'hard',
+        name: 'Сложный',
+        optionsCount: 6,
+        duration: 15,
+        totalRounds: 20,
+        hardcore: false
+    },
+    hardcore: {
+        key: 'hardcore',
+        name: 'Хардкор',
+        optionsCount: 0,
+        duration: 60,
+        totalRounds: 10,
+        hardcore: true
+    }
+};
+
+// ===== Конфигурация =====
 const CONFIG = {
     PROXY_URL: 'https://guessthemelody-482baoika-wild-happines.vercel.app/api/proxy',
-    ROUND_DURATION: 60,
     START_TIME: 15,
-    TOTAL_ROUNDS: 10,
     PLAYLIST_IDS: [
         'PL45_r-J4SdAFM0PbG6QeqVpLu975CK9Ip',
         'PL0GvsLQil0MmYC96KEs_7dTNsLm1PS6JX',
@@ -38,6 +74,7 @@ const CONFIG = {
     ]
 };
 
+// ===== Состояние =====
 const state = {
     player: null,
     currentTrack: null,
@@ -45,22 +82,26 @@ const state = {
     guessedSongs: 0,
     roundsPlayed: 0,
     timer: null,
-    timeLeft: CONFIG.ROUND_DURATION,
+    timeLeft: 60,
     running: false,
-    locked: false           // блокировка кликов на 1.5 с после ответа
+    locked: false,
+    difficulty: DIFFICULTIES.easy
 };
 
 // ===== DOM =====
-const viewContent   = document.querySelector('#viewContent');
-const buttonsBlock  = document.querySelector('#ButtonsBlock');
-const scoreValue    = document.querySelector('#scoreValue');
-const timerValue    = document.querySelector('#timerValue');
-const progressFill  = document.querySelector('#progressFill');
-const startScreen   = document.querySelector('#startScreen');
-const finalScreen   = document.querySelector('#finalScreen');
-const finalScore    = document.querySelector('#finalScore');
-const finalRating   = document.querySelector('#finalRating');
-const exitButton    = document.querySelector('#exitButton');
+const viewContent     = document.querySelector('#viewContent');
+const buttonsBlock    = document.querySelector('#ButtonsBlock');
+const scoreValue      = document.querySelector('#scoreValue');
+const timerValue      = document.querySelector('#timerValue');
+const roundValue      = document.querySelector('#roundValue');
+const progressFill    = document.querySelector('#progressFill');
+const startScreen     = document.querySelector('#startScreen');
+const finalScreen     = document.querySelector('#finalScreen');
+const finalScore      = document.querySelector('#finalScore');
+const finalTotal      = document.querySelector('#finalTotal');
+const finalRating     = document.querySelector('#finalRating');
+const finalDifficulty = document.querySelector('#finalDifficulty');
+const exitButton      = document.querySelector('#exitButton');
 
 // ===== Утилиты =====
 const createButton = (text, className) => {
@@ -87,20 +128,35 @@ async function init() {
 }
 
 function wireEvents() {
-    document.querySelector('#startButton').addEventListener('click', startGame);
-    document.querySelector('#restartButton').addEventListener('click', () => location.reload());
+    // Кнопки выбора сложности
+    document.querySelectorAll('.difficulty-card').forEach(card => {
+        card.addEventListener('click', () => startGame(card.dataset.difficulty));
+    });
+
+    document.querySelector('#restartButton').addEventListener('click', () => {
+        // Перезапуск с той же сложностью
+        startGame(state.difficulty.key);
+    });
     document.querySelector('#menuButton').addEventListener('click', returnToMenu);
     exitButton.addEventListener('click', returnToMenu);
     buttonsBlock.addEventListener('click', handleAnswerClick);
 }
 
-// ===== Старт / меню =====
-async function startGame() {
+// ===== Старт игры =====
+async function startGame(difficultyKey) {
+    // Выбираем конфиг сложности
+    state.difficulty = DIFFICULTIES[difficultyKey] || DIFFICULTIES.easy;
+
     state.running = true;
     state.locked = false;
     state.guessedSongs = 0;
     state.roundsPlayed = 0;
+    state.timeLeft = state.difficulty.duration;
+
     scoreValue.textContent = '0';
+    timerValue.textContent = state.difficulty.duration;
+    updateRoundCounter();
+    updateProgress();
 
     startScreen.classList.add('hidden');
     finalScreen.classList.add('hidden');
@@ -114,17 +170,23 @@ function returnToMenu() {
     state.running = false;
     state.locked = false;
     clearInterval(state.timer);
+
     if (state.player && typeof state.player.stopVideo === 'function') {
         state.player.stopVideo();
     }
+
     state.guessedSongs = 0;
     state.roundsPlayed = 0;
     state.options = [];
     state.currentTrack = null;
+
     scoreValue.textContent = '0';
-    timerValue.textContent = CONFIG.ROUND_DURATION;
+    timerValue.textContent = '—';
+    roundValue.textContent = '0/0';
     progressFill.style.width = '0%';
     buttonsBlock.innerHTML = '';
+    buttonsBlock.classList.remove('hardcore-mode');
+
     finalScreen.classList.add('hidden');
     exitButton.classList.add('hidden');
     startScreen.classList.remove('hidden');
@@ -144,7 +206,8 @@ async function loadNextRound() {
     spinner.remove();
     if (!state.running) return;
 
-    if (!tracks || tracks.length < 4) {
+    const required = state.difficulty.hardcore ? 1 : state.difficulty.optionsCount;
+    if (!tracks || tracks.length < Math.max(4, required)) {
         const err = document.createElement('div');
         err.className = 'error';
         err.textContent = 'Не удалось загрузить треки. Попробуйте ещё раз.';
@@ -160,15 +223,16 @@ async function loadNextRound() {
     createOrUpdatePlayer(correctTrack.videoId);
 
     clearInterval(state.timer);
-    state.timeLeft = CONFIG.ROUND_DURATION;
+    state.timeLeft = state.difficulty.duration;
     timerValue.textContent = state.timeLeft;
+    updateRoundCounter();
     updateProgress();
 }
 
-// ===== Запрос плейлиста с защитой от пустых/приватных =====
+// ===== Плейлисты =====
 async function fetchPlaylistTracks() {
     let attempts = 0;
-    const maxAttempts = 5; // Максимум 5 попыток
+    const maxAttempts = 5;
 
     while (attempts < maxAttempts) {
         attempts++;
@@ -178,7 +242,6 @@ async function fetchPlaylistTracks() {
             const response = await fetch(url);
             const data = await response.json();
 
-            // Если получили нормальный список (>= 4 треков), возвращаем его
             if (data.items && data.items.length >= 4) {
                 return data.items
                     .map(item => ({
@@ -187,19 +250,19 @@ async function fetchPlaylistTracks() {
                     }))
                     .filter(t => t.videoId);
             }
-
-            console.warn(`Плейлист ${randomPlaylistId} пустой или приватный. Пробуем другой...`);
+            console.warn(`Плейлист ${randomPlaylistId} пуст. Пробуем другой...`);
         } catch (error) {
             console.error('Ошибка загрузки плейлиста:', error);
         }
     }
-
-    // Если все попытки провалились — возвращаем пустой массив
     return [];
 }
 
-// ===== Варианты ответа (дедуп по videoId) =====
+// ===== Варианты ответа =====
 function generateOptions(correctTrack, allTracks) {
+    const count = state.difficulty.optionsCount;
+    if (count === 0) return []; // Хардкор — без вариантов
+
     const seen = new Set([correctTrack.videoId]);
     const options = [{ title: correctTrack.title, videoId: correctTrack.videoId }];
 
@@ -207,10 +270,10 @@ function generateOptions(correctTrack, allTracks) {
         .filter(t => !seen.has(t.videoId))
         .sort(() => 0.5 - Math.random());
 
-    while (options.length < 4 && others.length) {
+    while (options.length < count && others.length) {
         const cand = others.pop();
         if (seen.has(cand.videoId)) continue;
-        if (options.some(o => o.title === cand.title)) continue; // защита от одинаковых заголовков
+        if (options.some(o => o.title === cand.title)) continue;
         seen.add(cand.videoId);
         options.push({ title: cand.title, videoId: cand.videoId });
     }
@@ -231,7 +294,7 @@ function createOrUpdatePlayer(videoId) {
         else viewContent.appendChild(container);
     }
 
-    const endSeconds = CONFIG.START_TIME + CONFIG.ROUND_DURATION;
+    const endSeconds = CONFIG.START_TIME + state.difficulty.duration;
 
     if (state.player && typeof state.player.loadVideoById === 'function') {
         state.player.loadVideoById({
@@ -299,11 +362,120 @@ function togglePlay() {
 // ===== Кнопки ответа =====
 function updateButtons() {
     buttonsBlock.innerHTML = '';
-    state.options.forEach(opt => {
-        buttonsBlock.appendChild(createButton(opt.title, 'Buttons'));
-    });
+    buttonsBlock.classList.remove('hardcore-mode');
+
+    if (state.difficulty.hardcore) {
+        renderHardcoreInput();
+    } else {
+        state.options.forEach(opt => {
+            buttonsBlock.appendChild(createButton(opt.title, 'Buttons'));
+        });
+    }
 }
 
+function renderHardcoreInput() {
+    buttonsBlock.classList.add('hardcore-mode');
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'hardcore-input-wrapper';
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.id = 'hardcoreInput';
+    input.className = 'hardcore-input';
+    input.placeholder = 'Введите название трека или исполнителя...';
+    input.autocomplete = 'off';
+    input.spellcheck = false;
+
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') submitHardcoreAnswer();
+    });
+
+    const submitBtn = document.createElement('button');
+    submitBtn.className = 'btn btn-primary hardcore-submit';
+    submitBtn.innerHTML = '<i class="fa-solid fa-check"></i> Проверить';
+    submitBtn.addEventListener('click', submitHardcoreAnswer);
+
+    wrapper.appendChild(input);
+    wrapper.appendChild(submitBtn);
+    buttonsBlock.appendChild(wrapper);
+
+    setTimeout(() => input.focus(), 200);
+}
+
+function submitHardcoreAnswer() {
+    if (!state.running || state.locked) return;
+    const input = document.querySelector('#hardcoreInput');
+    if (!input || input.disabled) return;
+
+    const userAnswer = input.value.trim();
+    if (!userAnswer) {
+        input.focus();
+        return;
+    }
+
+    state.locked = true;
+    clearInterval(state.timer);
+
+    if (state.player && state.player.getPlayerState() === YT.PlayerState.PLAYING) {
+        state.player.pauseVideo();
+    }
+
+    input.disabled = true;
+    const submitBtn = document.querySelector('.hardcore-submit');
+    if (submitBtn) submitBtn.disabled = true;
+
+    const isCorrect = checkHardcoreAnswer(userAnswer, state.currentTrack.title);
+
+    if (isCorrect) {
+        input.classList.add('trueAnswer');
+        state.guessedSongs++;
+        scoreValue.textContent = state.guessedSongs;
+    } else {
+        input.classList.add('falseAnswer');
+    }
+
+    const feedback = document.createElement('div');
+    feedback.className = 'hardcore-feedback';
+    feedback.innerHTML = `Правильный ответ: <strong>${state.currentTrack.title}</strong>`;
+    buttonsBlock.appendChild(feedback);
+
+    setTimeout(nextRound, 2400);
+}
+
+// ===== Проверка ответа хардкор =====
+function normalizeStr(str) {
+    return String(str)
+        .toLowerCase()
+        .replace(/\([^)]*\)/g, ' ')
+        .replace(/\[[^\]]*\]/g, ' ')
+        .replace(/\b(official|video|audio|hd|hq|remaster(ed)?|lyrics?|clip|music|4k|mv|feat|ft)\b/gi, ' ')
+        .replace(/[^a-zа-яё0-9\s]/gi, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function checkHardcoreAnswer(userInput, correctTitle) {
+    const user = normalizeStr(userInput);
+    const correct = normalizeStr(correctTitle);
+    if (!user || user.length < 2) return false;
+
+    // Если ответ пользователя целиком входит в правильное название
+    if (correct.includes(user)) return true;
+
+    const userWords = user.split(' ').filter(w => w.length >= 2);
+    const correctWords = correct.split(' ').filter(w => w.length >= 2);
+    if (userWords.length === 0 || correctWords.length === 0) return false;
+
+    // Сколько слов из ответа пользователя совпало с правильным названием
+    const matches = userWords.filter(w =>
+        correctWords.some(cw => cw === w || cw.includes(w) || w.includes(cw))
+    ).length;
+
+    return (matches / userWords.length) >= 0.6;
+}
+
+// ===== Обычный ответ =====
 function handleAnswerClick(e) {
     if (!state.running || state.locked) return;
     const target = e.target;
@@ -346,23 +518,47 @@ function startTimer() {
 }
 
 function updateProgress() {
-    progressFill.style.width = `${(state.timeLeft / CONFIG.ROUND_DURATION) * 100}%`;
+    const total = state.difficulty.duration || 60;
+    progressFill.style.width = `${Math.max(0, (state.timeLeft / total) * 100)}%`;
+}
+
+function updateRoundCounter() {
+    const current = Math.min(state.roundsPlayed + 1, state.difficulty.totalRounds);
+    roundValue.textContent = `${current}/${state.difficulty.totalRounds}`;
 }
 
 function timeOut() {
     if (state.locked) return;
     state.locked = true;
-    document.querySelectorAll('.Buttons').forEach(btn => {
-        if (btn.textContent === state.currentTrack.title) btn.classList.add('trueAnswer');
-    });
-    setTimeout(nextRound, 1500);
+
+    if (state.difficulty.hardcore) {
+        // Для хардкора — просто показать правильный ответ
+        const input = document.querySelector('#hardcoreInput');
+        if (input) {
+            input.disabled = true;
+            input.classList.add('falseAnswer');
+        }
+        const submitBtn = document.querySelector('.hardcore-submit');
+        if (submitBtn) submitBtn.disabled = true;
+
+        const feedback = document.createElement('div');
+        feedback.className = 'hardcore-feedback';
+        feedback.innerHTML = `Время вышло! Правильный ответ: <strong>${state.currentTrack.title}</strong>`;
+        buttonsBlock.appendChild(feedback);
+    } else {
+        document.querySelectorAll('.Buttons').forEach(btn => {
+            if (btn.textContent === state.currentTrack.title) btn.classList.add('trueAnswer');
+        });
+    }
+
+    setTimeout(nextRound, 2000);
 }
 
 // ===== Следующий раунд / конец =====
 async function nextRound() {
     state.locked = false;
     state.roundsPlayed++;
-    if (state.roundsPlayed >= CONFIG.TOTAL_ROUNDS) {
+    if (state.roundsPlayed >= state.difficulty.totalRounds) {
         endGame();
         return;
     }
@@ -372,15 +568,20 @@ async function nextRound() {
 function endGame() {
     state.running = false;
     clearInterval(state.timer);
+
     if (state.player && typeof state.player.stopVideo === 'function') {
         state.player.stopVideo();
     }
-    finalScore.textContent = state.guessedSongs;
 
-    if (state.guessedSongs >= 9)       finalRating.textContent = '🏆 Вы музыкальный гений!';
-    else if (state.guessedSongs >= 7)  finalRating.textContent = '🎵 Отличный слух!';
-    else if (state.guessedSongs >= 4)  finalRating.textContent = '🎧 Неплохо, но можно лучше!';
-    else                               finalRating.textContent = '📻 Попробуйте ещё раз!';
+    finalScore.textContent = state.guessedSongs;
+    finalTotal.textContent = state.difficulty.totalRounds;
+    finalDifficulty.textContent = state.difficulty.name;
+
+    const percent = state.guessedSongs / state.difficulty.totalRounds;
+    if (percent >= 0.9)       finalRating.textContent = '🏆 Вы музыкальный гений!';
+    else if (percent >= 0.7)  finalRating.textContent = '🎵 Отличный слух!';
+    else if (percent >= 0.4)  finalRating.textContent = '🎧 Неплохо, но можно лучше!';
+    else                      finalRating.textContent = '📻 Попробуйте ещё раз!';
 
     exitButton.classList.add('hidden');
     finalScreen.classList.remove('hidden');
