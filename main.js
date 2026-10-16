@@ -53,6 +53,12 @@ const CONFIG = {
     ]
 };
 
+// ===== Кэш iTunes-запросов =====
+// Ключ: очищенное название трека (lowercase). Значение: строка (artist) | null.
+// null означает «запрашивали, но ничего не нашли» — чтобы не дёргать API повторно.
+const itunesCache = new Map();
+const ITUNES_CACHE_MAX = 200; // ограничиваем размер, чтобы не рос бесконечно
+
 // ===== Состояние =====
 const state = {
     player: null,
@@ -351,7 +357,7 @@ async function fetchPlaylistTracks() {
                     .map(item => ({
                         title: item.snippet.title,
                         videoId: item.snippet.resourceId.videoId,
-                        channel: item.snippet.channelTitle
+                        channel: item.snippet.videoOwnerChannelTitle || item.snippet.channelTitle
                     }))
                     .filter(t => t.videoId);
             }
@@ -571,7 +577,7 @@ function updateHintsAffordability() {
     });
 }
 
-function handleHintClick(e) {
+async function handleHintClick(e) {
     const btn = e.target.closest('.hint-btn');
     if (!btn || btn.disabled) return;
     if (!state.running || state.locked) return;
@@ -585,7 +591,7 @@ function handleHintClick(e) {
     let applied = false;
     switch (hintKey) {
         case 'remove2': applied = applyRemove2Hint(); break;
-        case 'artist':  applied = applyArtistHint();  break;
+        case 'artist':  applied = await applyArtistHint();  break;
         case 'time':    applied = applyTimeHint();    break;
         case 'skip':    applied = applySkipHint();    break;
     }
@@ -620,20 +626,158 @@ function applyRemove2Hint() {
 
 function cleanArtistName(name) {
     return String(name)
+        // "Evanescence - Topic" → "Evanescence"
         .replace(/\s*-\s*topic$/i, '')
+        // "EvanescenceVEVO" → "Evanescence"
         .replace(/vevo$/i, '')
-        .replace(/\s*official(\s+(music|video|channel|artist))?$/i, '')
+        // "Evanescence Official" → "Evanescence"
+        .replace(/\s*official(\s+(music|video|channel|artist|audio))?$/i, '')
+        // "Evanescence Records" → "Evanescence"
         .replace(/\s+records?$/i, '')
+        .replace(/\s+music$/i, '')
+        .replace(/\s+entertainment$/i, '')
+        // "Evanescence (Official)" → "Evanescence"
         .replace(/\s*\(\s*official\s*\)$/i, '')
         .trim();
 }
 
-function applyArtistHint() {
-    const channel = state.currentTrack.channel;
-    if (!channel) return false;
+/**
+ * Ищет исполнителя через iTunes Search API.
+ * @param {string} trackTitle — название трека с YouTube
+ * @returns {Promise<string|null>} — имя исполнителя или null
+ */
+async function fetchArtistFromItunes(trackTitle) {
+    if (!trackTitle) return null;
 
-    artistHint.innerHTML = `🎤 Исполнитель: <strong>${cleanArtistName(channel)}</strong>`;
+    // Очищаем название от типичных YouTube-хвостов, чтобы улучшить поиск
+    const cleanQuery = String(trackTitle)
+        .replace(/\([^)]*\)/g, ' ')
+        .replace(/\[[^\]]*\]/g, ' ')
+        .replace(/\b(official|video|audio|hd|hq|lyrics?|remaster(ed)?|clip|music|4k|mv|feat|ft)\b/gi, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    if (cleanQuery.length < 3) return null;
+
+    // === КЭШ ===
+    const cacheKey = cleanQuery.toLowerCase();
+    if (itunesCache.has(cacheKey)) {
+        return itunesCache.get(cacheKey);
+    }
+
+    const url = `${CONFIG.PROXY_URL}?api=itunes&term=${encodeURIComponent(cleanQuery)}&media=music&entity=song&limit=5`;
+
+    let artist = null;
+
+    try {
+        // Таймаут, чтобы игра не зависала, если прокси/iTunes тормозит
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+        const response = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+            console.warn('iTunes вернул статус', response.status);
+        } else {
+            const data = await response.json();
+
+            if (data.results && data.results.length > 0) {
+                // Ищем результат, у которого trackName максимально похож на запрос
+                const normalizedQuery = cleanQuery.toLowerCase();
+                let bestMatch = null;
+                let bestScore = 0;
+
+                for (const result of data.results) {
+                    const trackName = (result.trackName || '').toLowerCase();
+                    const artistName = result.artistName || '';
+
+                    const queryWords = normalizedQuery.split(' ').filter(w => w.length >= 3);
+                    const trackWords = trackName.split(' ').filter(w => w.length >= 3);
+
+                    const matches = queryWords.filter(qw =>
+                        trackWords.some(tw => tw.includes(qw) || qw.includes(tw))
+                    ).length;
+
+                    const score = queryWords.length > 0 ? matches / queryWords.length : 0;
+
+                    if (score > bestScore && artistName) {
+                        bestScore = score;
+                        bestMatch = artistName;
+                    }
+                }
+
+                if (bestMatch && bestScore >= 0.4) {
+                    artist = bestMatch;
+                } else {
+                    // Если не нашли хорошего совпадения — берём первого артиста
+                    artist = data.results[0]?.artistName || null;
+                }
+            }
+        }
+    } catch (error) {
+        if (error.name === 'AbortError') {
+            console.warn('iTunes-запрос прерван по таймауту');
+        } else {
+            console.error('iTunes search error:', error);
+        }
+        artist = null;
+    }
+
+    // === Сохраняем в кэш (в том числе null — «уже спрашивали, результата нет») ===
+    if (itunesCache.size >= ITUNES_CACHE_MAX) {
+        // Чистим самый старый элемент (Map хранит порядок вставки)
+        const firstKey = itunesCache.keys().next().value;
+        itunesCache.delete(firstKey);
+    }
+    itunesCache.set(cacheKey, artist);
+
+    return artist;
+}
+
+async function applyArtistHint() {
+    const track = state.currentTrack;
+    if (!track) return false;
+
+    // Показываем индикатор загрузки
+    artistHint.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Ищем исполнителя...';
     artistHint.classList.remove('hidden');
+
+    let artist = null;
+
+    // 1. Пытаемся получить исполнителя через iTunes (самый точный способ)
+    try {
+        artist = await fetchArtistFromItunes(track.title);
+    } catch (e) {
+        console.error('Artist hint: iTunes failed', e);
+        artist = null;
+    }
+
+    // 2. Fallback: эвристика по названию видео
+    if (!artist) {
+        try {
+            artist = extractArtistFromTitle(track.title);
+        } catch (e) {
+            artist = null;
+        }
+    }
+
+    // 3. Fallback: канал, загрузивший видео
+    if (!artist && track.channel) {
+        try {
+            artist = cleanArtistName(track.channel);
+        } catch (e) {
+            artist = null;
+        }
+    }
+
+    // 4. Если всё провалилось — честно сообщаем, но НЕ ломаем игру
+    if (!artist) {
+        artistHint.innerHTML = '🎤 Не удалось определить исполнителя';
+        return true; // Подсказка считается использованной
+    }
+
+    artistHint.innerHTML = `🎤 Исполнитель: <strong>${artist}</strong>`;
     return true;
 }
 
@@ -660,6 +804,37 @@ function applySkipHint() {
 
     setTimeout(nextRound, 1200);
     return true;
+}
+
+/** Пытается извлечь имя исполнителя из названия видео.
+ * Примеры:
+ *   "Evanescence - Bring Me To Life (Official HD Music Video)" → "Evanescence"
+ *   "Linkin Park - One Step Closer [Official HD Music Video]" → "Linkin Park"
+ *   "Adele – Hello" → "Adele"
+ */
+function extractArtistFromTitle(title) {
+    if (!title) return null;
+
+    // Сначала очищаем от скобок и квадратных скобок
+    let clean = String(title)
+        .replace(/\([^)]*\)/g, '')
+        .replace(/\[[^\]]*\]/g, '')
+        .trim();
+
+    // Ищем первый разделитель "-", "–", "—"
+    const match = clean.match(/^(.{2,60}?)\s*[-–—]\s+/);
+    if (!match) return null;
+
+    let candidate = match[1].trim();
+
+    // Отбрасываем мусор
+    candidate = candidate
+        .replace(/\b(official|video|audio|hd|hq|lyrics?|mv|4k|clip)\b/gi, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    // Если получилось что-то осмысленное — возвращаем
+    return candidate.length >= 2 ? candidate : null;
 }
 
 // ===== Применение результата (общий код для обычного и хардкора) =====
