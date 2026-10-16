@@ -58,6 +58,33 @@
             <!-- Всплывающие очки -->
             <div id="pointsPopup" class="points-popup"></div>
 
+            <!-- Показ исполнителя (подсказка) -->
+            <div id="artistHint" class="artist-hint hidden"></div>
+
+            <!-- Подсказки -->
+            <section id="hintsRow" class="hints-row hidden">
+                <button class="hint-btn" data-hint="remove2" title="Убрать 2 неправильных ответа">
+                    <i class="fa-solid fa-scissors"></i>
+                    <span>Убрать 2</span>
+                    <em>−100</em>
+                </button>
+                <button class="hint-btn" data-hint="artist" title="Показать исполнителя">
+                    <i class="fa-solid fa-microphone-lines"></i>
+                    <span>Исполнитель</span>
+                    <em>−150</em>
+                </button>
+                <button class="hint-btn" data-hint="time" title="Добавить 15 секунд">
+                    <i class="fa-solid fa-clock"></i>
+                    <span>+15 сек</span>
+                    <em>−75</em>
+                </button>
+                <button class="hint-btn" data-hint="skip" title="Пропустить трек">
+                    <i class="fa-solid fa-forward"></i>
+                    <span>Пропустить</span>
+                    <em>−200</em>
+                </button>
+            </section>
+
             <section id="ButtonsBlock" class="answers"></section>
 
             <!-- Стартовый экран с выбором сложности -->
