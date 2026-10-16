@@ -8,6 +8,14 @@ const DIFFICULTIES = {
     hardcore: { key: 'hardcore', name: 'Хардкор',  optionsCount: 0, duration: 60, totalRounds: 10, hardcore: true,  multiplier: 2    }
 };
 
+// ===== Стоимость подсказок =====
+const HINT_COSTS = {
+    remove2: 100,
+    artist:  150,
+    time:    75,
+    skip:    200
+};
+
 // ===== Конфигурация =====
 const CONFIG = {
     PROXY_URL: 'https://guessthemelody-482baoika-wild-happines.vercel.app/api/proxy',
@@ -62,7 +70,8 @@ const state = {
     score: 0,          // Общий счёт (очки)
     streak: 0,         // Текущая серия
     bestStreak: 0,     // Лучшая серия за игру
-    highScore: null    // Рекорд из localStorage
+    highScore: null,    // Рекорд из localStorage
+    hintsUsed: new Set(),  // какие подсказки использованы в текущем раунде
 };
 
 // ===== DOM =====
@@ -88,6 +97,8 @@ const highScoreBadge  = document.querySelector('#highScoreBadge');
 const highScoreValue  = document.querySelector('#highScoreValue');
 const highScoreDiff   = document.querySelector('#highScoreDiff');
 const exitButton      = document.querySelector('#exitButton');
+const hintsRow    = document.querySelector('#hintsRow');
+const artistHint  = document.querySelector('#artistHint');
 
 // ===== Утилиты =====
 const createButton = (text, className) => {
@@ -173,6 +184,7 @@ function calculatePoints(isCorrect, timeLeft, duration, currentStreak) {
 
 function updateScoreDisplay() {
     scoreValue.textContent = state.score;
+    if (hintsRow) updateHintsAffordability();
 }
 
 function updateStreakDisplay() {
@@ -218,6 +230,7 @@ function wireEvents() {
     document.querySelector('#menuButton').addEventListener('click', returnToMenu);
     exitButton.addEventListener('click', returnToMenu);
     buttonsBlock.addEventListener('click', handleAnswerClick);
+    hintsRow.addEventListener('click', handleHintClick);
 }
 
 // ===== Старт игры =====
@@ -232,6 +245,7 @@ async function startGame(difficultyKey) {
     state.streak = 0;
     state.bestStreak = 0;
     state.timeLeft = state.difficulty.duration;
+    state.hintsUsed = new Set();
 
     updateScoreDisplay();
     updateStreakDisplay();
@@ -242,6 +256,7 @@ async function startGame(difficultyKey) {
     startScreen.classList.add('hidden');
     finalScreen.classList.add('hidden');
     exitButton.classList.remove('hidden');
+    hintsRow.classList.remove('hidden');   // <-- показать подсказки
 
     addControlButton();
     await loadNextRound();
@@ -276,6 +291,10 @@ function returnToMenu() {
     finalScreen.classList.add('hidden');
     exitButton.classList.add('hidden');
     startScreen.classList.remove('hidden');
+    hintsRow.classList.add('hidden');
+    artistHint.classList.add('hidden');
+    artistHint.innerHTML = '';
+    state.hintsUsed = new Set();
 }
 
 // ===== Раунд =====
@@ -313,6 +332,7 @@ async function loadNextRound() {
     timerValue.textContent = state.timeLeft;
     updateRoundCounter();
     updateProgress();
+    renderHints();
 }
 
 // ===== Плейлисты =====
@@ -332,7 +352,8 @@ async function fetchPlaylistTracks() {
                 return data.items
                     .map(item => ({
                         title: item.snippet.title,
-                        videoId: item.snippet.resourceId.videoId
+                        videoId: item.snippet.resourceId.videoId,
+                        channel: item.snippet.channelTitle
                     }))
                     .filter(t => t.videoId);
             }
@@ -525,6 +546,124 @@ function submitHardcoreAnswer() {
     setTimeout(nextRound, 2400);
 }
 
+// ===== Подсказки =====
+function renderHints() {
+    state.hintsUsed = new Set();
+    artistHint.classList.add('hidden');
+    artistHint.innerHTML = '';
+
+    hintsRow.querySelectorAll('.hint-btn').forEach(btn => {
+        btn.classList.remove('used');
+        btn.disabled = false;
+        // В хардкоре нельзя убирать варианты — их и нет
+        if (btn.dataset.hint === 'remove2' && state.difficulty.hardcore) {
+            btn.disabled = true;
+        }
+    });
+
+    updateHintsAffordability();
+}
+
+function updateHintsAffordability() {
+    hintsRow.querySelectorAll('.hint-btn').forEach(btn => {
+        if (state.hintsUsed.has(btn.dataset.hint)) return;
+        if (state.difficulty.hardcore && btn.dataset.hint === 'remove2') return;
+        const cost = HINT_COSTS[btn.dataset.hint];
+        btn.disabled = state.score < cost;
+    });
+}
+
+function handleHintClick(e) {
+    const btn = e.target.closest('.hint-btn');
+    if (!btn || btn.disabled) return;
+    if (!state.running || state.locked) return;
+
+    const hintKey = btn.dataset.hint;
+    if (state.hintsUsed.has(hintKey)) return;
+
+    const cost = HINT_COSTS[hintKey];
+    if (state.score < cost) return;
+
+    let applied = false;
+    switch (hintKey) {
+        case 'remove2': applied = applyRemove2Hint(); break;
+        case 'artist':  applied = applyArtistHint();  break;
+        case 'time':    applied = applyTimeHint();    break;
+        case 'skip':    applied = applySkipHint();    break;
+    }
+
+    if (applied) {
+        state.score -= cost;
+        updateScoreDisplay();
+        showPointsPopup(-cost, false);
+
+        state.hintsUsed.add(hintKey);
+        btn.classList.add('used');
+        btn.disabled = true;
+    }
+}
+
+function applyRemove2Hint() {
+    if (state.difficulty.hardcore) return false;
+
+    const buttons = Array.from(document.querySelectorAll('.Buttons'));
+    const wrong = buttons
+        .filter(b => b.textContent !== state.currentTrack.title && !b.disabled)
+        .sort(() => 0.5 - Math.random());
+
+    if (wrong.length < 2) return false;
+
+    wrong.slice(0, 2).forEach(btn => {
+        btn.classList.add('removed-hint');
+        btn.disabled = true;
+    });
+    return true;
+}
+
+function cleanArtistName(name) {
+    return String(name)
+        .replace(/\s*-\s*topic$/i, '')
+        .replace(/vevo$/i, '')
+        .replace(/\s*official(\s+(music|video|channel|artist))?$/i, '')
+        .replace(/\s+records?$/i, '')
+        .replace(/\s*\(\s*official\s*\)$/i, '')
+        .trim();
+}
+
+function applyArtistHint() {
+    const channel = state.currentTrack.channel;
+    if (!channel) return false;
+
+    artistHint.innerHTML = `🎤 Исполнитель: <strong>${cleanArtistName(channel)}</strong>`;
+    artistHint.classList.remove('hidden');
+    return true;
+}
+
+function applyTimeHint() {
+    state.timeLeft += 15;
+    timerValue.textContent = state.timeLeft;
+    updateProgress();
+    return true;
+}
+
+function applySkipHint() {
+    if (state.locked) return false;
+    state.locked = true;
+    clearInterval(state.timer);
+
+    if (state.player && state.player.getPlayerState() === YT.PlayerState.PLAYING) {
+        state.player.pauseVideo();
+    }
+
+    // Показать правильный ответ, чтобы игрок знал, что пропустил
+    document.querySelectorAll('.Buttons').forEach(btn => {
+        if (btn.textContent === state.currentTrack.title) btn.classList.add('trueAnswer');
+    });
+
+    setTimeout(nextRound, 1200);
+    return true;
+}
+
 // ===== Применение результата (общий код для обычного и хардкора) =====
 function applyRoundResult(isCorrect) {
     const points = calculatePoints(isCorrect, state.timeLeft, state.difficulty.duration, state.streak);
@@ -618,7 +757,8 @@ function startTimer() {
 
 function updateProgress() {
     const total = state.difficulty.duration || 60;
-    progressFill.style.width = `${Math.max(0, (state.timeLeft / total) * 100)}%`;
+    const percent = Math.min(100, (state.timeLeft / total) * 100);
+    progressFill.style.width = `${Math.max(0, percent)}%`;
 }
 
 function updateRoundCounter() {
