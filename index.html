@@ -22,8 +22,13 @@
             <div class="hud" id="hud">
                 <div class="hud-item">
                     <i class="fa-solid fa-star"></i>
-                    <span class="hud-label">Счёт</span>
+                    <span class="hud-label">Очки</span>
                     <span id="scoreValue" class="hud-value">0</span>
+                </div>
+                <div class="hud-item" id="streakHud">
+                    <i class="fa-solid fa-fire"></i>
+                    <span class="hud-label">Серия</span>
+                    <span id="streakValue" class="hud-value">0</span>
                 </div>
                 <div class="hud-item">
                     <i class="fa-solid fa-stopwatch"></i>
@@ -50,6 +55,9 @@
                 <div class="video-overlay"></div>
             </section>
 
+            <!-- Всплывающие очки -->
+            <div id="pointsPopup" class="points-popup"></div>
+
             <section id="ButtonsBlock" class="answers"></section>
 
             <!-- Стартовый экран с выбором сложности -->
@@ -58,6 +66,12 @@
                     <h1>Угадай <span>мелодию</span></h1>
                     <p>Выбери уровень сложности и покажи свой музыкальный вкус!</p>
 
+                    <div class="high-score-badge hidden" id="highScoreBadge">
+                        <i class="fa-solid fa-crown"></i>
+                        Рекорд: <strong id="highScoreValue">0</strong>
+                        <span id="highScoreDiff"></span>
+                    </div>
+
                     <div class="difficulty-grid">
                         <button class="difficulty-card" data-difficulty="easy">
                             <i class="fa-solid fa-leaf"></i>
@@ -65,7 +79,7 @@
                             <ul>
                                 <li>4 варианта ответа</li>
                                 <li>60 секунд на трек</li>
-                                <li>10 раундов</li>
+                                <li>10 раундов · ×1 очки</li>
                             </ul>
                         </button>
 
@@ -75,7 +89,7 @@
                             <ul>
                                 <li>4 варианта ответа</li>
                                 <li>30 секунд на трек</li>
-                                <li>15 раундов</li>
+                                <li>15 раундов · ×1.25 очки</li>
                             </ul>
                         </button>
 
@@ -85,7 +99,7 @@
                             <ul>
                                 <li>6 вариантов ответа</li>
                                 <li>15 секунд на трек</li>
-                                <li>20 раундов</li>
+                                <li>20 раундов · ×1.5 очки</li>
                             </ul>
                         </button>
 
@@ -95,7 +109,7 @@
                             <ul>
                                 <li>Ввод названия вручную</li>
                                 <li>60 секунд на трек</li>
-                                <li>10 раундов</li>
+                                <li>10 раундов · ×2 очки</li>
                             </ul>
                         </button>
                     </div>
@@ -107,8 +121,15 @@
                 <div class="final-card">
                     <h2>Игра завершена!</h2>
                     <p class="final-difficulty">Сложность: <span id="finalDifficulty">—</span></p>
-                    <p class="final-score">Вы угадали <span id="finalScore">0</span> из <span id="finalTotal">10</span></p>
+                    <p class="final-score">
+                        Угадано: <strong><span id="finalGuessed">0</span>/<span id="finalTotal">10</span></strong>
+                    </p>
+                    <p class="final-points">
+                        <i class="fa-solid fa-star"></i> Очки: <strong id="finalScore">0</strong>
+                    </p>
+                    <p class="final-best-streak">🔥 Лучшая серия: <span id="finalBestStreak">0</span></p>
                     <p id="finalRating" class="final-rating"></p>
+                    <p class="final-record hidden" id="newRecordBadge">🏆 Новый рекорд!</p>
                     <div class="final-actions">
                         <button id="restartButton" class="btn btn-primary">
                             <i class="fa-solid fa-rotate-right"></i> Играть снова
