@@ -1,5 +1,3 @@
-// main.js
-
 // ===== Уровни сложности =====
 const DIFFICULTIES = {
     easy:     { key: 'easy',     name: 'Лёгкий',   optionsCount: 4, duration: 60, totalRounds: 10, hardcore: false, multiplier: 1    },
