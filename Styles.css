@@ -761,3 +761,106 @@ body {
     .points-popup { font-size: 1.6rem; }
     .final-points strong { font-size: 1.2rem; }
 }
+
+/* ===== .app-main: 4 строки ===== */
+.app-main {
+    display: grid;
+    grid-template-rows: 1fr auto auto auto;
+    gap: 12px;
+    min-height: 0;
+    position: relative;
+}
+
+/* ===== Подсказки ===== */
+.hints-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+.hint-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 11px 10px;
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-light);
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--transition);
+    backdrop-filter: blur(8px);
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.hint-btn i {
+    color: var(--primary-light);
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+.hint-btn em {
+    font-style: normal;
+    color: #fbbf24;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.hint-btn:hover:not(:disabled) {
+    background: rgba(255,255,255,0.1);
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 22px -10px rgba(42, 157, 143, 0.5);
+}
+
+.hint-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.hint-btn.used {
+    opacity: 0.2;
+    text-decoration: line-through;
+    filter: grayscale(1);
+}
+
+/* ===== Подсказка "исполнитель" ===== */
+.artist-hint {
+    padding: 12px 18px;
+    background: linear-gradient(135deg, rgba(255, 200, 50, 0.12), rgba(255, 150, 0, 0.06));
+    border: 1px solid rgba(255, 200, 50, 0.3);
+    border-radius: var(--radius-sm);
+    color: #ffe7a0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-align: center;
+    animation: rise 0.3s ease;
+}
+
+.artist-hint strong {
+    color: #ffc850;
+    font-weight: 900;
+}
+
+/* ===== Удалённые кнопки (после подсказки) ===== */
+.Buttons.removed-hint {
+    opacity: 0.15;
+    pointer-events: none;
+    filter: grayscale(1);
+    text-decoration: line-through;
+}
+
+/* ===== Адаптив ===== */
+@media (max-width: 600px) {
+    .hints-row { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .hint-btn { font-size: 0.75rem; padding: 10px 8px; }
+    .hint-btn span { display: none; }
+    .hint-btn em { font-size: 0.75rem; }
+    .artist-hint { font-size: 0.85rem; padding: 10px 14px; }
+}
