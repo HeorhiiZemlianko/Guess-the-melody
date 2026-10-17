@@ -110,6 +110,7 @@ export function returnToMenu() {
     state.running = false;
     state.locked = false;
     clearInterval(state.timer);
+    state.timer = null;
     if (state.player && typeof state.player.stopVideo === 'function') state.player.stopVideo();
 
     state.roundResults = [];
@@ -137,6 +138,7 @@ export function returnToMenu() {
 export function endGame() {
     state.running = false;
     clearInterval(state.timer);
+    state.timer = null;
     if (state.player && typeof state.player.stopVideo === 'function') state.player.stopVideo();
 
     finalMode.textContent = state.mode.name;
@@ -297,6 +299,7 @@ function applyRoundResult(isCorrect, kind) {
         if (!isCorrect) pointsPopup.classList.add('negative');
         pointsPopup.classList.add('visible');
         setTimeout(() => pointsPopup.classList.remove('visible', 'negative'), 1500);
+        timerValue.textContent = state.timeLeft; // обновляем цифру таймера на экране
     } else {
         showPointsPopup(points, isCorrect);
     }
