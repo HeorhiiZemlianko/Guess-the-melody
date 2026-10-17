@@ -14,6 +14,9 @@ export function startTimer() {
         state.timer = null;
     }
 
+    // Если время уже вышло, не запускаем таймер
+    if (state.timeLeft <= 0) return;
+    
     state.timer = setInterval(() => {
         state.timeLeft--;
         timerValue.textContent = state.timeLeft;
