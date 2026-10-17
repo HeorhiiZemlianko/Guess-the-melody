@@ -1,1 +1,12 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; }
 
+body {
+    font-family: 'Montserrat', sans-serif;
+    background: var(--bg-dark);
+    background-image:
+        radial-gradient(1200px 600px at 15% -10%, rgba(42,157,143,0.18), transparent 60%),
+        radial-gradient(900px 500px at 110% 110%, rgba(78,205,196,0.12), transparent 60%);
+    color: var(--text-light);
+    overflow: hidden;
+}
