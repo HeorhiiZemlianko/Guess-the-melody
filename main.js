@@ -115,6 +115,8 @@ const duelWinner = document.querySelector('#duelWinner');
 
 const modeGrid = document.querySelector('#modeGrid');
 const genreSelection = document.querySelector('#genreSelection');
+const stepMode = document.querySelector('#stepMode');
+const stepDifficulty = document.querySelector('#stepDifficulty');
 
 // ===== Утилиты =====
 const createButton = (text, className) => {
@@ -210,22 +212,34 @@ async function init() {
 }
 
 function wireEvents() {
-    // Выбор режима
+    // Выбор режима -> переход к шагу сложности
     modeGrid.querySelectorAll('.mode-card').forEach(card => {
         card.addEventListener('click', () => {
             modeGrid.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
             card.classList.add('active');
             state.mode = GAME_MODES[card.dataset.mode];
 
-            // Показываем блок со сложностью и кнопкой старта
-            document.querySelector('#gameSetup').classList.remove('hidden');
-            
-            if (state.mode.key === 'thematic') genreSelection.classList.remove('hidden');
-            else genreSelection.classList.add('hidden');
+            // Показываем шаг сложности, скрываем шаг режима
+            stepMode.classList.add('hidden');
+            stepDifficulty.classList.remove('hidden');
+
+            // Показываем выбор жанра только для тематического режима
+            if (state.mode.key === 'thematic') {
+                genreSelection.classList.remove('hidden');
+            } else {
+                genreSelection.classList.add('hidden');
+            }
         });
     });
 
-    // Выбор жанра
+    // Кнопка "Назад" -> возврат к выбору режима
+    document.querySelector('#backToModeBtn').addEventListener('click', () => {
+        stepDifficulty.classList.add('hidden');
+        stepMode.classList.remove('hidden');
+        genreSelection.classList.add('hidden'); // на всякий случай
+    });
+
+    // Остальные обработчики (жанр, сложность, старт, рестарт, меню, выход)
     genreSelection.querySelectorAll('.genre-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             genreSelection.querySelectorAll('.genre-btn').forEach(b => b.classList.remove('active'));
@@ -234,7 +248,6 @@ function wireEvents() {
         });
     });
 
-    // Выбор сложности
     document.querySelectorAll('.difficulty-card').forEach(card => {
         card.addEventListener('click', () => {
             document.querySelectorAll('.difficulty-card').forEach(c => c.classList.remove('active'));
@@ -322,10 +335,12 @@ function returnToMenu() {
     artistHint.classList.add('hidden');
     artistHint.innerHTML = '';
 
-    document.querySelector('#gameSetup').classList.add('hidden');
-    modeGrid.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
+    // Сброс стартового экрана на Шаг 1
+    stepDifficulty.classList.add('hidden');
+    stepMode.classList.remove('hidden');
     genreSelection.classList.add('hidden');
-    
+    modeGrid.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
+
     refreshHighScoreBadge();
 }
 
