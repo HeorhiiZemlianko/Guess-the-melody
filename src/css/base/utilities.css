@@ -1,1 +1,21 @@
+/* ===== Утилиты ===== */
+.hidden { display: none !important; }
 
+.spinner {
+    width: 50px; height: 50px;
+    border: 4px solid rgba(255,255,255,0.08);
+    border-top-color: var(--primary-light);
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 15;
+}
+
+/* Сообщение об ошибке поверх плеера */
+.error {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--text-muted);
+    text-align: center; padding: 20px;
+}
