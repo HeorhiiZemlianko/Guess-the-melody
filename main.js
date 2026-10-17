@@ -216,6 +216,10 @@ function wireEvents() {
             modeGrid.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
             card.classList.add('active');
             state.mode = GAME_MODES[card.dataset.mode];
+
+            // Показываем блок со сложностью и кнопкой старта
+            document.querySelector('#gameSetup').classList.remove('hidden');
+            
             if (state.mode.key === 'thematic') genreSelection.classList.remove('hidden');
             else genreSelection.classList.add('hidden');
         });
@@ -317,6 +321,11 @@ function returnToMenu() {
     turnIndicator.classList.add('hidden');
     artistHint.classList.add('hidden');
     artistHint.innerHTML = '';
+
+    document.querySelector('#gameSetup').classList.add('hidden');
+    modeGrid.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
+    genreSelection.classList.add('hidden');
+    
     refreshHighScoreBadge();
 }
 
