@@ -11,7 +11,6 @@
 </head>
 <body>
     <div class="app">
-
         <!-- ===== HEADER ===== -->
         <header class="app-header">
             <div class="logo">
@@ -20,21 +19,41 @@
             </div>
 
             <div class="hud" id="hud">
-                <div class="hud-item">
+                <!-- Классический режим: Очки -->
+                <div class="hud-item" id="scoreHud">
                     <i class="fa-solid fa-star"></i>
                     <span class="hud-label">Очки</span>
                     <span id="scoreValue" class="hud-value">0</span>
                 </div>
+
+                <!-- Дуэль: Счёт игроков -->
+                <div class="hud-item hidden" id="duelHud">
+                    <span class="hud-label">P1</span>
+                    <span id="p1ScoreValue" class="hud-value">0</span>
+                    <span class="hud-label" style="margin: 0 4px">:</span>
+                    <span id="p2ScoreValue" class="hud-value">0</span>
+                    <span class="hud-label">P2</span>
+                </div>
+
+                <!-- Выживание: Жизни -->
+                <div class="hud-item hidden" id="livesHud">
+                    <i class="fa-solid fa-heart" style="color: var(--danger)"></i>
+                    <span class="hud-label">Жизни</span>
+                    <span id="livesValue" class="hud-value">3</span>
+                </div>
+
                 <div class="hud-item" id="streakHud">
                     <i class="fa-solid fa-fire"></i>
                     <span class="hud-label">Серия</span>
                     <span id="streakValue" class="hud-value">0</span>
                 </div>
+
                 <div class="hud-item">
                     <i class="fa-solid fa-stopwatch"></i>
                     <span class="hud-label">Время</span>
                     <span id="timerValue" class="hud-value">60</span>
                 </div>
+
                 <div class="hud-item">
                     <i class="fa-solid fa-flag-checkered"></i>
                     <span class="hud-label">Раунд</span>
@@ -57,91 +76,99 @@
                 <div class="video-overlay"></div>
             </section>
 
-            <!-- Всплывающие очки -->
             <div id="pointsPopup" class="points-popup"></div>
-
-            <!-- Показ исполнителя (подсказка) -->
             <div id="artistHint" class="artist-hint hidden"></div>
 
-            <!-- Подсказки -->
+            <!-- Индикатор хода в Дуэли -->
+            <div id="turnIndicator" class="turn-indicator hidden">Ход Игрока 1</div>
+
             <section id="hintsRow" class="hints-row hidden">
-                <button class="hint-btn" data-hint="remove2" title="Убрать 2 неправильных ответа">
-                    <i class="fa-solid fa-scissors"></i>
-                    <span>Убрать 2</span>
-                    <em>−100</em>
-                </button>
-                <button class="hint-btn" data-hint="artist" title="Показать исполнителя">
-                    <i class="fa-solid fa-microphone-lines"></i>
-                    <span>Исполнитель</span>
-                    <em>−150</em>
-                </button>
-                <button class="hint-btn" data-hint="time" title="Добавить 15 секунд">
-                    <i class="fa-solid fa-clock"></i>
-                    <span>+15 сек</span>
-                    <em>−75</em>
-                </button>
-                <button class="hint-btn" data-hint="skip" title="Пропустить трек">
-                    <i class="fa-solid fa-forward"></i>
-                    <span>Пропустить</span>
-                    <em>−200</em>
-                </button>
+                <button class="hint-btn" data-hint="remove2"><i class="fa-solid fa-scissors"></i> <span>Убрать 2</span> <em>−100</em></button>
+                <button class="hint-btn" data-hint="artist"><i class="fa-solid fa-microphone-lines"></i> <span>Исполнитель</span> <em>−150</em></button>
+                <button class="hint-btn" data-hint="time"><i class="fa-solid fa-clock"></i> <span>+15 сек</span> <em>−75</em></button>
+                <button class="hint-btn" data-hint="skip"><i class="fa-solid fa-forward"></i> <span>Пропустить</span> <em>−200</em></button>
             </section>
 
             <section id="ButtonsBlock" class="answers"></section>
 
-            <!-- Стартовый экран с выбором сложности -->
+            <!-- Стартовый экран -->
             <div id="startScreen" class="start-screen">
                 <div class="start-card start-card--wide">
-                    <h1>Угадай <span>мелодию</span></h1>
-                    <p>Выбери уровень сложности и покажи свой музыкальный вкус!</p>
+                    <h1>Music<span>Battle</span></h1>
+                    <p>Настрой игру и покажи свой музыкальный вкус!</p>
 
                     <div class="high-score-badge hidden" id="highScoreBadge">
-                        <i class="fa-solid fa-crown"></i>
-                        Рекорд: <strong id="highScoreValue">0</strong>
-                        <span id="highScoreDiff"></span>
+                        <i class="fa-solid fa-crown"></i> Рекорд: <strong id="highScoreValue">0</strong> <span id="highScoreDiff"></span>
                     </div>
 
+                    <!-- Выбор режима -->
+                    <h3 class="section-title">Режим игры</h3>
+                    <div class="mode-grid" id="modeGrid">
+                        <button class="mode-card active" data-mode="classic">
+                            <i class="fa-solid fa-compact-disc"></i>
+                            <h4>Классический</h4>
+                            <p>Стандартные раунды</p>
+                        </button>
+                        <button class="mode-card" data-mode="blitz">
+                            <i class="fa-solid fa-bolt"></i>
+                            <h4>Блиц</h4>
+                            <p>60 сек на всё. +5 сек за верный, −3 за ошибку</p>
+                        </button>
+                        <button class="mode-card" data-mode="survival">
+                            <i class="fa-solid fa-heart-crack"></i>
+                            <h4>Выживание</h4>
+                            <p>3 жизни. Игра до первой ошибки</p>
+                        </button>
+                        <button class="mode-card" data-mode="duel">
+                            <i class="fa-solid fa-users"></i>
+                            <h4>Дуэль</h4>
+                            <p>2 игрока по очереди</p>
+                        </button>
+                        <button class="mode-card" data-mode="thematic">
+                            <i class="fa-solid fa-guitar"></i>
+                            <h4>Тематический</h4>
+                            <p>Выбор жанра</p>
+                        </button>
+                    </div>
+
+                    <!-- Выбор жанра (скрыт по умолчанию) -->
+                    <div id="genreSelection" class="genre-grid hidden">
+                        <h3 class="section-title">Выбери жанр</h3>
+                        <div class="genre-buttons">
+                            <button class="btn btn-ghost genre-btn active" data-genre="rock">Рок</button>
+                            <button class="btn btn-ghost genre-btn" data-genre="pop">Поп</button>
+                            <button class="btn btn-ghost genre-btn" data-genre="retro">Ретро</button>
+                        </div>
+                    </div>
+
+                    <!-- Выбор сложности -->
+                    <h3 class="section-title">Сложность</h3>
                     <div class="difficulty-grid">
-                        <button class="difficulty-card" data-difficulty="easy">
+                        <button class="difficulty-card active" data-difficulty="easy">
                             <i class="fa-solid fa-leaf"></i>
                             <h3>Лёгкий</h3>
-                            <ul>
-                                <li>4 варианта ответа</li>
-                                <li>60 секунд на трек</li>
-                                <li>10 раундов · ×1 очки</li>
-                            </ul>
+                            <ul><li>4 варианта</li><li>60 сек</li><li>10 раундов</li></ul>
                         </button>
-
                         <button class="difficulty-card" data-difficulty="medium">
                             <i class="fa-solid fa-fire"></i>
                             <h3>Средний</h3>
-                            <ul>
-                                <li>4 варианта ответа</li>
-                                <li>30 секунд на трек</li>
-                                <li>15 раундов · ×1.25 очки</li>
-                            </ul>
+                            <ul><li>4 варианта</li><li>30 сек</li><li>15 раундов</li></ul>
                         </button>
-
                         <button class="difficulty-card" data-difficulty="hard">
                             <i class="fa-solid fa-skull"></i>
                             <h3>Сложный</h3>
-                            <ul>
-                                <li>6 вариантов ответа</li>
-                                <li>15 секунд на трек</li>
-                                <li>20 раундов · ×1.5 очки</li>
-                            </ul>
+                            <ul><li>6 вариантов</li><li>15 сек</li><li>20 раундов</li></ul>
                         </button>
-
                         <button class="difficulty-card" data-difficulty="hardcore">
                             <i class="fa-solid fa-crown"></i>
                             <h3>Хардкор</h3>
-                            <ul>
-                                <li>Ввод названия вручную</li>
-                                <li>60 секунд на трек</li>
-                                <li>10 раундов · ×2 очки</li>
-                            </ul>
+                            <ul><li>Ввод вручную</li><li>60 сек</li><li>10 раундов</li></ul>
                         </button>
                     </div>
+
+                    <button id="startGameBtn" class="btn btn-primary" style="margin-top: 20px; width: 100%;">
+                        <i class="fa-solid fa-play"></i> Начать игру
+                    </button>
                 </div>
             </div>
 
@@ -149,23 +176,26 @@
             <div id="finalScreen" class="final-screen hidden">
                 <div class="final-card">
                     <h2>Игра завершена!</h2>
-                    <p class="final-difficulty">Сложность: <span id="finalDifficulty">—</span></p>
-                    <p class="final-score">
-                        Угадано: <strong><span id="finalGuessed">0</span>/<span id="finalTotal">10</span></strong>
-                    </p>
-                    <p class="final-points">
-                        <i class="fa-solid fa-star"></i> Очки: <strong id="finalScore">0</strong>
-                    </p>
-                    <p class="final-best-streak">🔥 Лучшая серия: <span id="finalBestStreak">0</span></p>
+                    <p class="final-difficulty">Режим: <span id="finalMode">—</span> | Сложность: <span id="finalDifficulty">—</span></p>
+                    
+                    <div id="finalSinglePlayer" class="final-stats">
+                        <p class="final-score">Угадано: <strong><span id="finalGuessed">0</span>/<span id="finalTotal">10</span></strong></p>
+                        <p class="final-points"><i class="fa-solid fa-star"></i> Очки: <strong id="finalScore">0</strong></p>
+                        <p class="final-best-streak">🔥 Лучшая серия: <span id="finalBestStreak">0</span></p>
+                    </div>
+                    
+                    <div id="finalDuel" class="final-stats hidden">
+                        <p class="final-score">Игрок 1: <strong id="finalP1">0</strong></p>
+                        <p class="final-score">Игрок 2: <strong id="finalP2">0</strong></p>
+                        <p id="duelWinner" class="final-rating"></p>
+                    </div>
+
                     <p id="finalRating" class="final-rating"></p>
                     <p class="final-record hidden" id="newRecordBadge">🏆 Новый рекорд!</p>
+                    
                     <div class="final-actions">
-                        <button id="restartButton" class="btn btn-primary">
-                            <i class="fa-solid fa-rotate-right"></i> Играть снова
-                        </button>
-                        <button id="menuButton" class="btn btn-ghost">
-                            <i class="fa-solid fa-house"></i> В меню
-                        </button>
+                        <button id="restartButton" class="btn btn-primary"><i class="fa-solid fa-rotate-right"></i> Играть снова</button>
+                        <button id="menuButton" class="btn btn-ghost"><i class="fa-solid fa-house"></i> В меню</button>
                     </div>
                 </div>
             </div>
@@ -173,22 +203,13 @@
 
         <!-- ===== FOOTER ===== -->
         <footer class="app-footer">
-            <div class="footer-left">
-                <span>© 2025 Music Battle</span>
-                <span class="dot">•</span>
-                <span>Музыкальная игра-викторина</span>
-            </div>
+            <div class="footer-left"><span>© 2025 Music Battle</span><span class="dot">•</span><span>Музыкальная викторина</span></div>
             <div class="footer-right">
-                <a href="https://www.youtube.com" target="_blank" rel="noopener noreferrer">
-                    <i class="fa-brands fa-youtube"></i> Видео: YouTube
-                </a>
-                <a href="https://github.com/HeorhiiZemlianko/HeorhiiZemlianko" target="_blank" rel="noopener noreferrer">
-                    <i class="fa-brands fa-github"></i> GitHub
-                </a>
+                <a href="https://www.youtube.com" target="_blank"><i class="fa-brands fa-youtube"></i> YouTube</a>
+                <a href="https://github.com/HeorhiiZemlianko" target="_blank"><i class="fa-brands fa-github"></i> GitHub</a>
             </div>
         </footer>
     </div>
-
     <script src="main.js" type="text/javascript"></script>
 </body>
 </html>
