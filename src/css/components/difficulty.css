@@ -31,3 +31,14 @@
 .difficulty-card[data-difficulty="medium"]   i { color: #fbbf24; }
 .difficulty-card[data-difficulty="hard"]     i { color: #f87171; }
 .difficulty-card[data-difficulty="hardcore"] i { color: #a855f7; }
+
+.difficulty-card.active {
+    background: rgba(42, 157, 143, 0.12);
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 2px var(--primary-light), 0 14px 32px -12px rgba(42, 157, 143, 0.55);
+    transform: translateY(-2px);
+}
+
+.difficulty-card.active i {
+    transform: scale(1.15);
+}
