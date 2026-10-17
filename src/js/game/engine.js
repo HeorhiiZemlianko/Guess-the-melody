@@ -128,6 +128,9 @@ export function returnToMenu() {
     genreSelection.classList.add('hidden');
     modeGrid.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
 
+    // Сброс выделения сложности
+    document.querySelectorAll('.difficulty-card').forEach(c => c.classList.remove('active'));
+
     refreshHighScoreBadge();
 }
 
