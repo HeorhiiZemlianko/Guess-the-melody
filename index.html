@@ -92,57 +92,58 @@
             <section id="ButtonsBlock" class="answers"></section>
 
             <!-- Стартовый экран -->
-            <div id="startScreen" class="start-screen">
-                <div class="start-card start-card--wide">
-                    <h1>Music<span>Battle</span></h1>
-                    <p>Настрой игру и покажи свой музыкальный вкус!</p>
-
-                    <div class="high-score-badge hidden" id="highScoreBadge">
-                        <i class="fa-solid fa-crown"></i> Рекорд: <strong id="highScoreValue">0</strong> <span id="highScoreDiff"></span>
+            <div class="start-card start-card--wide">
+                <h1>Music<span>Battle</span></h1>
+                <p>Настрой игру и покажи свой музыкальный вкус!</p>
+            
+                <div class="high-score-badge hidden" id="highScoreBadge">
+                    <i class="fa-solid fa-crown"></i> Рекорд: <strong id="highScoreValue">0</strong> <span id="highScoreDiff"></span>
+                </div>
+            
+                <!-- Выбор режима -->
+                <h3 class="section-title">Шаг 1: Режим игры</h3>
+                <div class="mode-grid" id="modeGrid">
+                    <!-- Убрали класс active у классического режима -->
+                    <button class="mode-card" data-mode="classic">
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <h4>Классический</h4>
+                        <p>Стандартные раунды</p>
+                    </button>
+                    <button class="mode-card" data-mode="blitz">
+                        <i class="fa-solid fa-bolt"></i>
+                        <h4>Блиц</h4>
+                        <p>60 сек на всё. +5 сек за верный, −3 за ошибку</p>
+                    </button>
+                    <button class="mode-card" data-mode="survival">
+                        <i class="fa-solid fa-heart-crack"></i>
+                        <h4>Выживание</h4>
+                        <p>3 жизни. Игра до первой ошибки</p>
+                    </button>
+                    <button class="mode-card" data-mode="duel">
+                        <i class="fa-solid fa-users"></i>
+                        <h4>Дуэль</h4>
+                        <p>2 игрока по очереди</p>
+                    </button>
+                    <button class="mode-card" data-mode="thematic">
+                        <i class="fa-solid fa-guitar"></i>
+                        <h4>Тематический</h4>
+                        <p>Выбор жанра</p>
+                    </button>
+                </div>
+            
+                <!-- Выбор жанра (скрыт по умолчанию) -->
+                <div id="genreSelection" class="genre-grid hidden">
+                    <h3 class="section-title">Выбери жанр</h3>
+                    <div class="genre-buttons">
+                        <button class="btn btn-ghost genre-btn active" data-genre="rock">Рок</button>
+                        <button class="btn btn-ghost genre-btn" data-genre="pop">Поп</button>
+                        <button class="btn btn-ghost genre-btn" data-genre="retro">Ретро</button>
                     </div>
-
-                    <!-- Выбор режима -->
-                    <h3 class="section-title">Режим игры</h3>
-                    <div class="mode-grid" id="modeGrid">
-                        <button class="mode-card active" data-mode="classic">
-                            <i class="fa-solid fa-compact-disc"></i>
-                            <h4>Классический</h4>
-                            <p>Стандартные раунды</p>
-                        </button>
-                        <button class="mode-card" data-mode="blitz">
-                            <i class="fa-solid fa-bolt"></i>
-                            <h4>Блиц</h4>
-                            <p>60 сек на всё. +5 сек за верный, −3 за ошибку</p>
-                        </button>
-                        <button class="mode-card" data-mode="survival">
-                            <i class="fa-solid fa-heart-crack"></i>
-                            <h4>Выживание</h4>
-                            <p>3 жизни. Игра до первой ошибки</p>
-                        </button>
-                        <button class="mode-card" data-mode="duel">
-                            <i class="fa-solid fa-users"></i>
-                            <h4>Дуэль</h4>
-                            <p>2 игрока по очереди</p>
-                        </button>
-                        <button class="mode-card" data-mode="thematic">
-                            <i class="fa-solid fa-guitar"></i>
-                            <h4>Тематический</h4>
-                            <p>Выбор жанра</p>
-                        </button>
-                    </div>
-
-                    <!-- Выбор жанра (скрыт по умолчанию) -->
-                    <div id="genreSelection" class="genre-grid hidden">
-                        <h3 class="section-title">Выбери жанр</h3>
-                        <div class="genre-buttons">
-                            <button class="btn btn-ghost genre-btn active" data-genre="rock">Рок</button>
-                            <button class="btn btn-ghost genre-btn" data-genre="pop">Поп</button>
-                            <button class="btn btn-ghost genre-btn" data-genre="retro">Ретро</button>
-                        </div>
-                    </div>
-
-                    <!-- Выбор сложности -->
-                    <h3 class="section-title">Сложность</h3>
+                </div>
+            
+                <!-- НОВЫЙ БЛОК: Сложность и кнопка старта (скрыт по умолчанию) -->
+                <div id="gameSetup" class="hidden" style="animation: rise 0.4s ease;">
+                    <h3 class="section-title">Шаг 2: Сложность</h3>
                     <div class="difficulty-grid">
                         <button class="difficulty-card active" data-difficulty="easy">
                             <i class="fa-solid fa-leaf"></i>
@@ -165,7 +166,7 @@
                             <ul><li>Ввод вручную</li><li>60 сек</li><li>10 раундов</li></ul>
                         </button>
                     </div>
-
+            
                     <button id="startGameBtn" class="btn btn-primary" style="margin-top: 20px; width: 100%;">
                         <i class="fa-solid fa-play"></i> Начать игру
                     </button>
