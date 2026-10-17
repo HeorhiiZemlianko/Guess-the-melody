@@ -1,1 +1,31 @@
+/* ============================================================
+   🎵 QUIZ MUSIC — MAIN STYLESHEET
+   Точка входа. Импортирует модули в порядке каскада.
+   ============================================================ */
 
+/* 1. База */
+@import url('./base/variables.css');
+@import url('./base/reset.css');
+@import url('./base/animations.css');
+@import url('./base/utilities.css');
+
+/* 2. Каркас */
+@import url('./layout/app.css');
+@import url('./layout/header.css');
+@import url('./layout/footer.css');
+@import url('./layout/screens.css');
+
+/* 3. Компоненты */
+@import url('./components/buttons.css');
+@import url('./components/video.css');
+@import url('./components/answers.css');
+@import url('./components/hardcore.css');
+@import url('./components/hints.css');
+@import url('./components/progress.css');
+@import url('./components/popup.css');
+@import url('./components/modes.css');
+@import url('./components/difficulty.css');
+@import url('./components/duel.css');
+
+/* 4. Адаптив — ВСЕГДА последним */
+@import url('./responsive.css');
