@@ -19,7 +19,7 @@ const HINT_COSTS = { remove2: 100, artist: 150, time: 75, skip: 200 };
 
 // ===== Конфигурация =====
 const CONFIG = {
-    PROXY_URL: 'https://guessthemelody-482baoika-wild-happines.vercel.app/api/proxy',
+    PROXY_URL: 'https://guessthemelody.vercel.app/api/proxy',
     START_TIME: 15,
     HIGH_SCORE_KEY: 'musicBattleHighScore_v1',
     // Базовые плейлисты (все подряд)
