@@ -1,1 +1,58 @@
+/* ===== HEADER ===== */
+.app-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 14px 22px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+}
 
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.25rem;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+.logo i { color: var(--primary-light); font-size: 1.4rem; }
+.logo em { font-style: normal; color: var(--primary-light); font-weight: 400; }
+
+.hud {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    min-width: 0;
+}
+.hud-item { display: flex; align-items: center; gap: 8px; font-weight: 700; white-space: nowrap; }
+.hud-item i { color: var(--primary-light); font-size: 0.95rem; }
+.hud-label { color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+.hud-value { font-size: 1.15rem; min-width: 24px; text-align: center; }
+
+.progress-bar { flex: 1; min-width: 80px; height: 6px; background: rgba(255,255,255,0.08); border-radius: 99px; overflow: hidden; }
+#progressFill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--primary-light)); border-radius: 99px; transition: width 0.4s linear; }
+
+.exit-button {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 18px;
+    font-family: inherit; font-size: 0.9rem; font-weight: 600;
+    color: var(--text-light);
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--card-border);
+    border-radius: 99px;
+    cursor: pointer;
+    transition: all var(--transition);
+}
+.exit-button:hover { background: var(--danger); border-color: var(--danger); transform: translateY(-1px); }
+
+/* Индикатор серии (streak) */
+#streakHud { position: relative; transition: color var(--transition); }
+#streakHud.active { color: var(--primary-light); }
+#streakHud.active i { color: #ff7a00; animation: flame 0.6s ease infinite alternate; }
+#streakHud.active .hud-value { color: #ffb84d; }
