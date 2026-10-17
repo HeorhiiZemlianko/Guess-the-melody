@@ -1,1 +1,44 @@
+/* ===== Режимы и Жанры ===== */
+.mode-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+}
+.mode-card {
+    padding: 16px 10px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-sm);
+    color: var(--text-light);
+    cursor: pointer;
+    transition: all var(--transition);
+    text-align: center;
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    font-family: inherit;
+}
+.mode-card i { font-size: 1.5rem; color: var(--text-muted); transition: color var(--transition); }
+.mode-card h4 { font-size: 0.9rem; font-weight: 700; }
+.mode-card p { font-size: 0.7rem; color: var(--text-muted); margin: 0; }
+.mode-card:hover { background: rgba(255,255,255,0.08); border-color: var(--primary); }
+.mode-card.active { border-color: var(--primary); background: rgba(42,157,143,0.1); }
+.mode-card.active i { color: var(--primary-light); }
 
+.genre-grid { margin-top: 10px; }
+.genre-buttons { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.genre-btn {
+    padding: 8px 20px;
+    font-family: inherit; font-size: 0.9rem; font-weight: 600;
+    color: var(--text-light);
+    background: transparent;
+    border: 1px solid var(--card-border);
+    border-radius: 99px;
+    cursor: pointer;
+    transition: all var(--transition);
+}
+.genre-btn:hover { background: rgba(255,255,255,0.08); border-color: var(--primary); }
+.genre-btn.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #052a26;
+    font-weight: 700;
+}
