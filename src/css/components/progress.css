@@ -1,1 +1,20 @@
-
+/* ===== Прогресс раундов ===== */
+.rounds-progress {
+    display: flex; justify-content: center; align-items: center;
+    gap: 8px; padding: 8px 0 0; flex-wrap: wrap;
+}
+.round-dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+    transition: all 0.3s ease;
+}
+.round-dot--current {
+    background: var(--primary); border-color: var(--primary-light);
+    transform: scale(1.3);
+    animation: dotPulse 1.4s ease-in-out infinite;
+}
+.round-dot--correct { background: var(--success); border-color: var(--success); box-shadow: 0 0 8px rgba(46,204,113,0.5); }
+.round-dot--wrong   { background: var(--danger);  border-color: var(--danger);  box-shadow: 0 0 8px rgba(230,57,70,0.5); }
+.round-dot--timeout { background: #f59e0b; border-color: #f59e0b; box-shadow: 0 0 8px rgba(245,158,11,0.5); }
+.round-dot--skipped { background: #64748b; border-color: #64748b; }
