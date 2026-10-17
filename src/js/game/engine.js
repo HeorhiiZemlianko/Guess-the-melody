@@ -16,7 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { GAME_MODES, HINT_COSTS } from '../config.js';
+// src/js/game/engine.js
+import { HINT_COSTS } from '../config.js';
 import { state } from '../state.js';
 import {
     viewContent, buttonsBlock, artistHint, exitButton,
@@ -25,7 +26,9 @@ import {
     scoreHud, duelHud, livesHud, livesValue,
     finalSinglePlayer, finalDuel, finalP1, finalP2, duelWinner,
     stepMode, stepDifficulty, genreSelection, modeGrid,
-    hintsRow, roundsProgress, turnIndicator, timerValue
+    hintsRow, roundsProgress, turnIndicator, timerValue,
+    modeDifficultyHud, currentModeLabel, currentDifficultyLabel,
+    createButton
 } from '../dom.js';
 import { fetchPlaylistTracks } from '../api/playlists.js';
 import { fetchArtistFromItunes } from '../api/itunes.js';
@@ -37,44 +40,51 @@ import { updateButtons } from '../ui/buttons.js';
 import { renderHints, updateHintsAffordability } from '../ui/hints.js';
 import { updateScoreDisplay, updateStreakDisplay, showPointsPopup, updateTurnIndicator } from '../ui/hud.js';
 import { normalizeStr, extractArtistFromTitle, cleanArtistName } from '../utils/strings.js';
+import { ModeStrategies } from './modes.js';
 
 /* ===================== УПРАВЛЕНИЕ ИГРОЙ ===================== */
 
 export async function startGame() {
     state.running = true;
     state.locked = false;
-    state.difficulty = { ...state.difficulty };
+    
+    // Фикс: клонируем сложность, чтобы режимы не мутировали оригинал
+    state.difficulty = { ...state.difficulty }; 
+
     state.guessedSongs = 0;
     state.roundsPlayed = 0;
     state.score = 0;
     state.p1Score = 0;
     state.p2Score = 0;
-    state.currentPlayer = 1;
-    state.lives = 3;
     state.streak = 0;
     state.bestStreak = 0;
     state.hintsUsed = new Set();
     state.roundResults = [];
-    state.timeLeft = state.difficulty.duration;
-    state.globalTimerMode = (state.mode.key === 'blitz');
+    
+    // Инициализируем стратегию для текущего режима
+    const strategy = ModeStrategies[state.mode.key];
+    strategy.init(state);
 
     setOnTimeoutHandler(timeOut);
 
+    // Настройка UI
     scoreHud.classList.remove('hidden');
     duelHud.classList.add('hidden');
     livesHud.classList.add('hidden');
+    modeDifficultyHud.classList.remove('hidden');
+    
+    currentModeLabel.textContent = state.mode.name;
+    currentDifficultyLabel.textContent = state.difficulty.name;
 
     if (state.mode.key === 'duel') {
         scoreHud.classList.add('hidden');
         duelHud.classList.remove('hidden');
         turnIndicator.classList.remove('hidden');
-        state.difficulty.totalRounds = 10;
+        state.difficulty.totalRounds = 10; // Дуэль всегда 10 раундов
         updateTurnIndicator();
     } else if (state.mode.key === 'survival') {
         livesHud.classList.remove('hidden');
-        state.difficulty.totalRounds = 999;
-    } else if (state.mode.key === 'blitz') {
-        state.timeLeft = 60;
+        livesValue.textContent = state.lives;
     }
 
     if (state.mode.key !== 'duel') turnIndicator.classList.add('hidden');
@@ -110,6 +120,7 @@ export function returnToMenu() {
     hintsRow.classList.add('hidden');
     roundsProgress.classList.add('hidden');
     turnIndicator.classList.add('hidden');
+    modeDifficultyHud.classList.add('hidden');
     artistHint.classList.add('hidden');
     artistHint.innerHTML = '';
 
@@ -162,6 +173,7 @@ export function endGame() {
     }
 
     exitButton.classList.add('hidden');
+    modeDifficultyHud.classList.add('hidden');
     finalScreen.classList.remove('hidden');
 }
 
@@ -210,15 +222,17 @@ async function nextRound() {
     state.locked = false;
     state.roundsPlayed++;
 
-    if (state.mode.key === 'survival' && state.lives <= 0) { endGame(); return; }
-    if (state.mode.key === 'blitz' && state.timeLeft <= 0) { endGame(); return; }
-    if (state.mode.key === 'duel' && state.roundsPlayed >= state.difficulty.totalRounds) { endGame(); return; }
-    if (state.mode.key !== 'survival' && state.mode.key !== 'blitz' && state.mode.key !== 'duel') {
-        if (state.roundsPlayed >= state.difficulty.totalRounds) { endGame(); return; }
+    const strategy = ModeStrategies[state.mode.key];
+    
+    // Проверяем условия окончания игры через стратегию
+    if (strategy.checkGameOver(state)) {
+        endGame();
+        return;
     }
 
+    // Смена игрока в дуэли
     if (state.mode.key === 'duel') {
-        state.currentPlayer = state.currentPlayer === 1 ? 2 : 1;
+        strategy.onRoundEnd(state, true); // Передаем true/false неважно, логика смены игрока внутри
         updateTurnIndicator();
     }
 
@@ -252,15 +266,13 @@ function applyRoundResult(isCorrect, kind) {
         state.guessedSongs++;
         state.streak++;
         state.bestStreak = Math.max(state.bestStreak, state.streak);
-
+        
         if (state.mode.key === 'duel') {
             if (state.currentPlayer === 1) state.p1Score += points;
             else state.p2Score += points;
         } else {
             state.score += points;
         }
-
-        if (state.mode.key === 'blitz') { state.timeLeft += 5; realPoints = '+5 сек'; }
     } else {
         state.streak = 0;
         if (state.mode.key === 'duel') {
@@ -269,21 +281,15 @@ function applyRoundResult(isCorrect, kind) {
         } else {
             state.score = Math.max(0, state.score + points);
         }
-        if (state.mode.key === 'blitz') { state.timeLeft -= 3; realPoints = '-3 сек'; }
-        if (state.mode.key === 'survival') {
-            state.lives--;
-            livesValue.textContent = state.lives;
-        }
     }
 
-    if (!kind) kind = isCorrect ? 'correct' : 'wrong';
-    state.roundResults.push(kind);
-    renderRoundsProgress();
-    updateScoreDisplay();
-    updateHintsAffordability();
-    updateStreakDisplay();
+    // Вызываем логику режима
+    const strategy = ModeStrategies[state.mode.key];
+    strategy.onRoundEnd(state, isCorrect);
 
+    // Обновляем UI после логики режима
     if (state.mode.key === 'blitz') {
+        realPoints = isCorrect ? '+5 сек' : '-3 сек';
         pointsPopup.textContent = realPoints;
         pointsPopup.classList.remove('visible', 'negative');
         void pointsPopup.offsetWidth;
@@ -293,6 +299,17 @@ function applyRoundResult(isCorrect, kind) {
     } else {
         showPointsPopup(points, isCorrect);
     }
+
+    if (state.mode.key === 'survival' && !isCorrect) {
+        livesValue.textContent = state.lives;
+    }
+
+    if (!kind) kind = isCorrect ? 'correct' : 'wrong';
+    state.roundResults.push(kind);
+    renderRoundsProgress();
+    updateScoreDisplay();
+    updateHintsAffordability();
+    updateStreakDisplay();
 }
 
 function timeOut() {
