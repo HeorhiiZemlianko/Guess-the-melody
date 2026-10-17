@@ -16,7 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-// src/js/game/engine.js
 import { HINT_COSTS } from '../config.js';
 import { state } from '../state.js';
 import {
