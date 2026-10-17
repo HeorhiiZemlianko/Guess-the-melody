@@ -12,7 +12,7 @@ import {
 import { fetchPlaylistTracks } from '../api/playlists.js';
 import { fetchArtistFromItunes } from '../api/itunes.js';
 import { calculatePoints } from '../core/scoring.js';
-import { saveHighScore } from '../core/storage.js';
+import { saveHighScore, refreshHighScoreBadge } from '../core/storage.js';
 import { createOrUpdatePlayer, addControlButton } from '../core/player.js';
 import { setOnTimeoutHandler, updateProgress, updateRoundCounter, renderRoundsProgress } from '../core/timer.js';
 import { updateButtons } from '../ui/buttons.js';
@@ -25,6 +25,7 @@ import { normalizeStr, extractArtistFromTitle, cleanArtistName } from '../utils/
 export async function startGame() {
     state.running = true;
     state.locked = false;
+    state.difficulty = { ...state.difficulty };
     state.guessedSongs = 0;
     state.roundsPlayed = 0;
     state.score = 0;
