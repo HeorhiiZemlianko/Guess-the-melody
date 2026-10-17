@@ -1,1 +1,19 @@
+/* ===== Каркас приложения ===== */
+.app {
+    height: 100vh;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 16px;
+    gap: 16px;
+}
 
+/* ===== MAIN ===== */
+.app-main {
+    display: grid;
+    grid-template-rows: auto 1fr auto auto auto;
+    gap: 12px;
+    min-height: 0;
+    position: relative;
+}
