@@ -1,1 +1,18 @@
-
+/* ===== Переменные ===== */
+:root {
+    --primary: #2a9d8f;
+    --primary-light: #4ecdc4;
+    --primary-dark: #21867a;
+    --danger: #e63946;
+    --success: #2ecc71;
+    --bg-dark: #07090d;
+    --bg-elevated: #10141b;
+    --card-bg: rgba(255, 255, 255, 0.06);
+    --card-border: rgba(255, 255, 255, 0.08);
+    --text-light: #f1faee;
+    --text-muted: #8b95a5;
+    --radius-sm: 10px;
+    --radius: 16px;
+    --radius-lg: 24px;
+    --transition: 0.25s ease;
+}
