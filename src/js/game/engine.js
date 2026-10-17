@@ -220,6 +220,8 @@ async function loadNextRound() {
     updateRoundCounter();
     updateProgress();
     renderHints();
+
+    startTimer();
 }
 
 async function nextRound() {
