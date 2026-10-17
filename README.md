@@ -53,3 +53,8 @@ Guess-the-melody/
 ├── .env.local             # Переменные окружения (НЕ КОММИТИТЬ)
 ├── .gitignore
 └── vercel.json            # (Опционально) Конфигурация Vercel
+
+## Лицензия
+
+Этот проект распространяется под лицензией **GNU General Public License v3.0**. 
+Полный текст лицензии доступен в файле [LICENSE](LICENSE).
