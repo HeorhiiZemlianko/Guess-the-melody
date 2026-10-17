@@ -462,7 +462,7 @@ function createOrUpdatePlayer(videoId) {
         state.player.loadVideoById({ videoId, startSeconds: CONFIG.START_TIME, endSeconds });
     } else {
         state.player = new YT.Player('youtube-player', {
-            height: '100%', width: '100%', videoId, playerVars: pVars, host: 'https://www.youtube-nocookie.com',
+            height: '100%', width: '100%', videoId, playerVars: pVars,
             events: { onReady: onPlayerReady, onStateChange: onPlayerStateChange }
         });
     }
