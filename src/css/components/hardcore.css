@@ -1,1 +1,35 @@
+/* ===== Хардкор (ввод ответа) ===== */
+.answers.hardcore-mode { grid-template-columns: 1fr; }
+.hardcore-input-wrapper { display: flex; gap: 12px; grid-column: 1 / -1; }
+.hardcore-input {
+    flex: 1; padding: 18px 22px;
+    font-family: inherit; font-size: 1rem; font-weight: 600;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-sm);
+    color: var(--text-light);
+    outline: none; transition: all var(--transition);
+    backdrop-filter: blur(8px);
+}
+.hardcore-input::placeholder { color: var(--text-muted); font-weight: 500; }
+.hardcore-input:focus { border-color: var(--primary); background: rgba(255,255,255,0.08); box-shadow: 0 0 0 3px rgba(42,157,143,0.18); }
+.hardcore-input.trueAnswer { border-color: var(--success) !important; background: rgba(46,204,113,0.15) !important; color: var(--success) !important; }
+.hardcore-input.falseAnswer { border-color: var(--danger) !important; background: rgba(230,57,70,0.15) !important; color: var(--danger) !important; animation: shake 0.45s ease; }
 
+.hardcore-submit { white-space: nowrap; }
+
+.hardcore-feedback {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 14px 18px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    animation: rise 0.3s ease;
+}
+.hardcore-feedback strong {
+    display: block; margin-top: 6px;
+    color: var(--primary-light); font-size: 1.05rem; font-weight: 700;
+}
