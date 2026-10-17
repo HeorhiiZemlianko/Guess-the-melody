@@ -8,14 +8,19 @@ export function setOnTimeoutHandler(fn) {
 }
 
 export function startTimer() {
-    if (state.globalTimerMode && state.timer) return;
-    clearInterval(state.timer);
+    // Всегда очищаем старый интервал, чтобы не было «зависших» ссылок
+    if (state.timer) {
+        clearInterval(state.timer);
+        state.timer = null;
+    }
+
     state.timer = setInterval(() => {
         state.timeLeft--;
         timerValue.textContent = state.timeLeft;
         updateProgress();
         if (state.timeLeft <= 0) {
             clearInterval(state.timer);
+            state.timer = null;
             if (onTimeoutHandler) onTimeoutHandler();
         }
     }, 1000);
