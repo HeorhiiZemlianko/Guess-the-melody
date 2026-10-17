@@ -1,1 +1,33 @@
-
+/* ===== Сетка сложности ===== */
+.difficulty-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin-top: 8px;
+}
+.difficulty-card {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    padding: 20px 16px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-sm);
+    color: var(--text-light);
+    cursor: pointer;
+    transition: all var(--transition);
+    font-family: inherit;
+    text-align: center;
+}
+.difficulty-card i { font-size: 1.7rem; transition: transform var(--transition); }
+.difficulty-card h3 { font-size: 1.05rem; margin: 4px 0 2px; font-weight: 700; }
+.difficulty-card ul { list-style: none; padding: 0; margin: 0; font-size: 0.75rem; color: var(--text-muted); line-height: 1.6; }
+.difficulty-card:hover {
+    background: rgba(255,255,255,0.08);
+    border-color: var(--primary);
+    transform: translateY(-3px);
+    box-shadow: 0 14px 32px -12px rgba(42,157,143,0.55);
+}
+.difficulty-card:hover i { transform: scale(1.18); }
+.difficulty-card[data-difficulty="easy"]     i { color: #4ade80; }
+.difficulty-card[data-difficulty="medium"]   i { color: #fbbf24; }
+.difficulty-card[data-difficulty="hard"]     i { color: #f87171; }
+.difficulty-card[data-difficulty="hardcore"] i { color: #a855f7; }
