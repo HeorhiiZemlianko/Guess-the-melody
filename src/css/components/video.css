@@ -1,1 +1,32 @@
+/* ===== Видео-сцена ===== */
+.video-stage {
+    position: relative;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: #000;
+    border: 1px solid var(--card-border);
+    box-shadow: 0 25px 60px -20px rgba(0,0,0,0.9);
+}
+#youtube-player,
+#youtube-player iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 
+.video-overlay {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 70px;
+    background: linear-gradient(to bottom, #000 60%, transparent);
+    z-index: 5; pointer-events: none;
+}
+
+#controlButton {
+    position: absolute; bottom: 20px; left: 50%;
+    transform: translateX(-50%);
+    padding: 14px 26px;
+    font-size: 1.3rem;
+    border: none; border-radius: 99px;
+    background: rgba(0,0,0,0.55);
+    color: white; cursor: pointer;
+    backdrop-filter: blur(10px);
+    transition: all var(--transition);
+    z-index: 10;
+}
+#controlButton:hover { background: var(--primary); transform: translateX(-50%) scale(1.08); }
