@@ -37,6 +37,13 @@
             </div>
 
             <div class="hud" id="hud">
+                <!-- Отображение текущего режима и сложности -->
+                <div class="hud-item hidden" id="modeDifficultyHud">
+                    <i class="fa-solid fa-gamepad"></i>
+                    <span class="hud-label" id="currentModeLabel">Режим</span>
+                    <span class="hud-value" id="currentDifficultyLabel" style="font-size: 0.9rem; color: var(--primary-light);">Лёгкий</span>
+                </div>
+                
                 <!-- Классический режим: Очки -->
                 <div class="hud-item" id="scoreHud">
                     <i class="fa-solid fa-star"></i>
