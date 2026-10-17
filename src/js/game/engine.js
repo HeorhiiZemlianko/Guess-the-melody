@@ -231,7 +231,6 @@ async function nextRound() {
 
     // Смена игрока в дуэли
     if (state.mode.key === 'duel') {
-        strategy.onRoundEnd(state, true); // Передаем true/false неважно, логика смены игрока внутри
         updateTurnIndicator();
     }
 
