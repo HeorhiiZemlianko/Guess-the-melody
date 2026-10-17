@@ -1,1 +1,9 @@
-
+/* Индикатор хода (для мультиплеера) */
+.turn-indicator {
+    text-align: center;
+    font-size: 1.1rem; font-weight: 700;
+    color: var(--primary-light);
+    padding: 8px;
+    background: rgba(78,205,196,0.1);
+    border-radius: var(--radius-sm);
+}
