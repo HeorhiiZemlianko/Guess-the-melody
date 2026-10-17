@@ -1,1 +1,42 @@
+/* ===== Ответы ===== */
+.answers { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
 
+.Buttons {
+    padding: 18px 22px;
+    font-family: inherit; font-size: 1rem; font-weight: 600;
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-sm);
+    background: var(--card-bg);
+    color: var(--text-light);
+    cursor: pointer;
+    transition: all var(--transition);
+    text-align: center; line-height: 1.4;
+    backdrop-filter: blur(8px);
+}
+.Buttons:hover:not(.trueAnswer):not(.falseAnswer):not(.removed-hint) {
+    background: rgba(255,255,255,0.12);
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px -8px rgba(42,157,143,0.5);
+}
+.Buttons:active { transform: translateY(0); }
+
+.trueAnswer {
+    background: var(--success) !important;
+    border-color: var(--success) !important;
+    color: #062117 !important;
+    animation: pulse 0.45s ease;
+}
+.falseAnswer {
+    background: var(--danger) !important;
+    border-color: var(--danger) !important;
+    animation: shake 0.45s ease;
+}
+
+/* Удалённая кнопка (после подсказки) */
+.Buttons.removed-hint {
+    opacity: 0.15;
+    pointer-events: none;
+    filter: grayscale(1);
+    text-decoration: line-through;
+}
