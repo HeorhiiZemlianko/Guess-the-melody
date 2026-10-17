@@ -49,6 +49,10 @@ export const startGameBtn      = document.querySelector('#startGameBtn');
 export const restartButton     = document.querySelector('#restartButton');
 export const menuButton        = document.querySelector('#menuButton');
 
+export const modeDifficultyHud = document.querySelector('#modeDifficultyHud');
+export const currentModeLabel = document.querySelector('#currentModeLabel');
+export const currentDifficultyLabel = document.querySelector('#currentDifficultyLabel');
+
 export const createButton = (text, className) => {
     const btn = document.createElement('button');
     btn.textContent = text;
