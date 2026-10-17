@@ -24,14 +24,13 @@ const CONFIG = {
     HIGH_SCORE_KEY: 'musicBattleHighScore_v1',
     // Базовые плейлисты (все подряд)
     PLAYLISTS: [
-        'PL45_r-J4SdAFM0PbG6QeqVpLu975CK9Ip', 'PL0GvsLQil0MmYC96KEs_7dTNsLm1PS6JX', 'PLVQ7g3eO27cH8KG9mktLWH8zcqiwTntP', 'PLGBuKfnErZlAdX8X5LC9ODeHaxoxTuV2z',
+        'PL45_r-J4SdAFM0PbG6QeqVpLu975CK9Ip', 'PL0GvsLQil0MmYC96KEs_7dTNsLm1PS6JX', 'PLd5lauRj72uJdKMqnZK6gqQRdr5nGlHlg', 'PLGBuKfnErZlAdX8X5LC9ODeHaxoxTuV2z',
         'PLn4GvABOzCQursVQ7qMU9CkNaKz4RgrVM', 'PLplXQ2cg9B_qrCVd1J_iId5SvP8Kf_BfS', 'PLa2a9FJY91_0x1s4eq6mf9b91m3Pahv0G', 'PLLRIXAxtV8zwSNxHwvdMVsxshybCCyuRT',
         'PLDIoUOhQQPlXr63I_vwF9GD8sAKh77dWU', 'PLDIoUOhQQPlWc-Kd6TCjTRIl0Z6fSQV0X', 'PLK8eO9itnhzfKFSQJ28kExpwZAv7TdvnA', 'PLvMVt4c68EeXRV2R1fdieei9HwpuUKXKL',
         'PLpxuOeEi0yCQtge9JUBOH--_yqg-jUm4h', 'PL4sJ8-_X2ESCrsyPWS8sUyU6z1Ssv6a9V', 'PLmXxqSJJq-yXrCPGIT2gn8b34JjOrl4Xf', 'PLG5FRq89_oJ40pbXEQ2AxA5rYu7hefUor',
         'PLMZxug3Hi7FaQ4HE-NEt9qpG2lvABRiwf', 'PLGBuKfnErZlBUh0KAYO3MvJ0bGqVZkhuG', 'PLw-VjHDlEOgtH-Ce-dJzPOtIm5xTVC4t2', 'PL9WAfiI0yDE-EQjgQ3eoD_WKP-FvwuwoW',
         'PL2hGGKKbxvqKJltSpqWA-IsKrZjJGkN0f', 'PL4fGSI1pDJn4E_HoW5HB-w5vFPkYfo3dB', 'PL-X-RdKBc6bZn4ikgv6ePzT5huW9Skp22', 'PLUU0HxYhx6SYAXu61BOGo8RmmHU38DThS',
         'PLw7pKYWfLkB7BE3_vJDhREZMX9ygFE89D', 'PLXAfqIM-LFu5zBMsv-wK4h6-OfLtSyBYG', 'PLNgxbIxenTkPp6etGScybfrECfbXm2ZUz', 'PLxD4o4XAOgl8Hx3AKFLb9st5TKs2oVMRv',
-        'PLd5lauRj72uJdKMqnZK6gqQRdr5nGlHlg'
     ],
     // Тематические плейлисты (примеры, можно заменить на свои)
     THEMES: {
