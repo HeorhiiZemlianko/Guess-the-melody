@@ -34,7 +34,7 @@ import { fetchArtistFromItunes } from '../api/itunes.js';
 import { calculatePoints } from '../core/scoring.js';
 import { saveHighScore, refreshHighScoreBadge } from '../core/storage.js';
 import { createOrUpdatePlayer, addControlButton } from '../core/player.js';
-import { setOnTimeoutHandler, updateProgress, updateRoundCounter, renderRoundsProgress } from '../core/timer.js';
+import { setOnTimeoutHandler, updateProgress, updateRoundCounter, renderRoundsProgress, startTimer } from '../core/timer.js';
 import { updateButtons } from '../ui/buttons.js';
 import { renderHints, updateHintsAffordability } from '../ui/hints.js';
 import { updateScoreDisplay, updateStreakDisplay, showPointsPopup, updateTurnIndicator } from '../ui/hud.js';
