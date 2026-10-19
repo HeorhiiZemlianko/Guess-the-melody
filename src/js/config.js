@@ -23,6 +23,37 @@ export const DIFFICULTIES = {
     hardcore: { key: 'hardcore', name: 'Хардкор',  optionsCount: 0, duration: 60, totalRounds: 10, hardcore: true,  multiplier: 2    }
 };
 
+// Сложности специально для режима Блиц
+export const BLITZ_DIFFICULTIES = {
+    easy: {
+        key: 'easy',
+        name: 'Лёгкий',
+        optionsCount: 4,
+        blitzTime: 60,
+        blitzBonus: 5,
+        blitzPenalty: 3,
+        multiplier: 1
+    },
+    medium: {
+        key: 'medium',
+        name: 'Средний',
+        optionsCount: 4,
+        blitzTime: 60,
+        blitzBonus: 3,
+        blitzPenalty: 4,
+        multiplier: 1.25
+    },
+    hard: {
+        key: 'hard',
+        name: 'Сложный',
+        optionsCount: 6,
+        blitzTime: 45,
+        blitzBonus: 3,
+        blitzPenalty: 5,
+        multiplier: 1.5
+    }
+};
+
 export const GAME_MODES = {
     classic:  { key: 'classic',  name: 'Классический' },
     blitz:    { key: 'blitz',    name: 'Блиц' },
