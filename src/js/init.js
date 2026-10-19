@@ -1,4 +1,4 @@
-import { GAME_MODES, DIFFICULTIES } from './config.js';
+import { GAME_MODES, DIFFICULTIES, BLITZ_DIFFICULTIES } from './config.js';
 import { state } from './state.js';
 import {
     modeGrid, genreSelection, stepMode, stepDifficulty,
