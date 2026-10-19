@@ -48,7 +48,14 @@ function wireEvents() {
         card.addEventListener('click', () => {
             document.querySelectorAll('.difficulty-card').forEach(c => c.classList.remove('active'));
             card.classList.add('active');
-            state.difficulty = DIFFICULTIES[card.dataset.difficulty];
+            
+            const diffKey = card.dataset.difficulty;
+            // Для Блица используем отдельный набор сложностей
+            if (state.mode.key === 'blitz' && BLITZ_DIFFICULTIES[diffKey]) {
+                state.difficulty = BLITZ_DIFFICULTIES[diffKey];
+            } else {
+                state.difficulty = DIFFICULTIES[diffKey];
+            }
         });
     });
 
