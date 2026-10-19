@@ -16,14 +16,19 @@ export const ModeStrategies = {
     blitz: {
         init: (state) => {
             state.globalTimerMode = true;
-            state.timeLeft = 60;
+            // Берём стартовое время из сложности (по умолчанию 60)
+            state.timeLeft = state.difficulty.blitzTime || 60;
         },
         checkGameOver: (state) => {
             return state.timeLeft <= 0;
         },
         onRoundEnd: (state, isCorrect) => {
-            if (isCorrect) state.timeLeft += 5;
-            else state.timeLeft -= 3;
+            // Бонусы/штрафы тоже из сложности
+            if (isCorrect) {
+                state.timeLeft += (state.difficulty.blitzBonus || 5);
+            } else {
+                state.timeLeft -= (state.difficulty.blitzPenalty || 3);
+            }
         }
     },
     
