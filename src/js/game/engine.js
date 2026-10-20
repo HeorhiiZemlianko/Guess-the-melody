@@ -116,6 +116,28 @@ export function returnToMenu() {
     if (state.player && typeof state.player.stopVideo === 'function') state.player.stopVideo();
 
     state.roundResults = [];
+    // --- СБРОС ИГРОВОГО СОСТОЯНИЯ ---
+    state.score = 0;
+    state.p1Score = 0;
+    state.p2Score = 0;
+    state.streak = 0;
+    state.bestStreak = 0;
+    state.guessedSongs = 0;
+    state.roundsPlayed = 0;
+    state.lives = 3;
+    state.currentPlayer = 1;
+    state.hintsUsed = new Set();
+    state.currentTrack = null;
+    state.options = [];
+    // Обновляем HUD, чтобы он показывал нули
+    updateScoreDisplay();
+    updateStreakDisplay();
+    updateRoundCounter();
+    // Сбрасываем таймер и прогресс-бар на значение по умолчанию
+    state.timeLeft = state.difficulty.duration;
+    timerValue.textContent = state.timeLeft;
+    updateProgress();
+    // --- КОНЕЦ СБРОСА ---
     finalScreen.classList.add('hidden');
     exitButton.classList.add('hidden');
     startScreen.classList.remove('hidden');
