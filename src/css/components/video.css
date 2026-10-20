@@ -12,7 +12,6 @@
     min-height: 200px;
 }
 
-/* ЖЕСТКО ЗАСТАВЛЯЕМ ПЛЕЕР ЗАНЯТЬ ВСЁ МЕСТО */
 #youtube-player, 
 #youtube-player iframe {
     position: absolute;
