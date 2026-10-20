@@ -12,6 +12,7 @@
     transition: all var(--transition);
     text-align: center; line-height: 1.4;
     backdrop-filter: blur(8px);
+    animation: fadeInUp 0.3s ease forwards;
 }
 .Buttons:hover:not(.trueAnswer):not(.falseAnswer):not(.removed-hint) {
     background: rgba(255,255,255,0.12);
