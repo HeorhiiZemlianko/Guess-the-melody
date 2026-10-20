@@ -1,6 +1,6 @@
 /* ===== Каркас приложения ===== */
 .app {
-    height: 100vh;
+    height: 100dvh;
     display: grid;
     grid-template-rows: auto 1fr auto;
     max-width: 1200px;
