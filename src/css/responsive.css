@@ -36,3 +36,57 @@
     .rounds-progress { gap: 5px; padding: 6px 0 0; }
     .round-dot { width: 9px; height: 9px; }
 }
+
+/* ============================================================
+   ДОПОЛНИТЕЛЬНАЯ ЗАЩИТА ОТ ПЕРЕПОЛНЕНИЯ НА УЗКИХ ЭКРАНАХ
+   ============================================================ */
+@media (max-width: 480px) {
+    /* Уменьшаем отступы у контейнера */
+    .app {
+        padding: 6px;
+        gap: 8px;
+    }
+
+    /* HUD: разрешаем перенос элементов и уменьшаем промежутки */
+    .hud {
+        flex-wrap: wrap;
+        gap: 8px 12px;
+    }
+    .hud-item {
+        gap: 4px;
+    }
+    .hud-value {
+        font-size: 1rem;
+    }
+
+    /* Кнопки ответов и подсказок: уменьшаем шрифт и отступы */
+    .Buttons {
+        padding: 12px 10px;
+        font-size: 0.85rem;
+    }
+    .hint-btn {
+        padding: 8px 6px;
+        font-size: 0.7rem;
+    }
+
+    /* Стартовая и финальная карточки: чтобы не прилипали к краям */
+    .start-card, .final-card {
+        padding: 20px 14px;
+    }
+    .start-card h1 {
+        font-size: 1.5rem;
+    }
+
+    /* Прогресс-бар и видео-сцена: ограничиваем ширину */
+    .progress-bar {
+        min-width: 0;
+    }
+    .video-stage {
+        max-width: 100%;
+    }
+}
+
+/* Гарантия, что ничто не вызовет горизонтальный скролл */
+.app {
+    overflow-x: hidden;
+}
