@@ -1,15 +1,14 @@
 /* ===== Видео-сцена ===== */
 .video-stage {
     position: relative;
+    width: 100%;
+    /* Задаём соотношение сторон 16:9. Браузер сам рассчитает высоту. */
+    aspect-ratio: 16 / 9;
     border-radius: var(--radius);
     overflow: hidden;
     background: #000;
     border: 1px solid var(--card-border);
     box-shadow: 0 25px 60px -20px rgba(0,0,0,0.9);
-    /* Задаем пропорции, чтобы видео не сплющивалось */
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    min-height: 200px;
 }
 
 #youtube-player, 
@@ -17,8 +16,8 @@
     position: absolute;
     top: 0;
     left: 0;
-    width: 100% !important;
-    height: 100% !important;
+    width: 100%;
+    height: 100%;
     border: 0;
 }
 
