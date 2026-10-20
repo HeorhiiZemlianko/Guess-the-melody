@@ -27,4 +27,5 @@ export const state = {
     hintsUsed: new Set(),
     roundResults: [],
     globalTimerMode: false,
+    cachedTracks: [],
 };
