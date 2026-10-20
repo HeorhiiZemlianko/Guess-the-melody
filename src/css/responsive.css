@@ -2,27 +2,37 @@
                             АДАПТИВ
    ============================================================ */
 @media (max-width: 768px) {
-    .app { padding: 10px; gap: 10px; }
-    .app-header { flex-wrap: wrap; gap: 12px; padding: 12px 16px; }
-    .logo { font-size: 1.05rem; }
-    .hud { order: 3; width: 100%; justify-content: space-between; gap: 14px; }
+    .app { padding: 8px; gap: 8px; height: 100dvh; }
+    .app-header { flex-wrap: wrap; gap: 10px; padding: 10px 12px; justify-content: center; }
+    .logo { font-size: 1.1rem; }
+    .hud { width: 100%; justify-content: space-between; gap: 5px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: var(--radius-sm); }
+    /* Скрываем текстовые подписи (Очки, Время, Раунд) */
     .hud-item .hud-label { display: none; }
-    .progress-bar { width: 100%; }
-    .exit-button { padding: 10px 14px; }
+    .hud-value { font-size: 0.95rem; }
+    .hud-item { gap: 4px; }
+    
+    .exit-button { padding: 8px 12px; }
     .exit-button span { display: none; }
-    .mode-grid { grid-template-columns: 1fr 1fr; }
-    .difficulty-grid { grid-template-columns: 1fr 1fr; }
+
+    /* --- КНОПКИ ОТВЕТОВ --- */
     .answers { grid-template-columns: 1fr; gap: 8px; }
-    .Buttons { padding: 14px 16px; font-size: 0.9rem; }
-    .hints-row { grid-template-columns: repeat(2, 1fr); gap: 8px; }
-    .start-card, .final-card { padding: 28px 20px; }
+    .Buttons { padding: 12px 14px; font-size: 0.85rem; }
+    
+    /* --- ПОДСКАЗКИ --- */
+    .hints-row { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+    .hint-btn { padding: 8px 4px; font-size: 0.7rem; flex-direction: column; text-align: center; }
+    .hint-btn span { display: none; }
+    .hint-btn em { font-size: 0.65rem; }
+
+    /* --- ЭКРАНЫ --- */
+    .start-card, .final-card { padding: 24px 16px; }
     .start-card h1 { font-size: 1.8rem; }
-    .app-footer { justify-content: center; text-align: center; font-size: 0.75rem; }
-    .footer-left { justify-content: center; }
-    .video-stage {
-          aspect-ratio: 16 / 9;
-          min-height: 180px;
-      }
+    .mode-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .mode-card { padding: 12px 8px; }
+    .difficulty-grid { grid-template-columns: 1fr; gap: 8px; }
+
+    /* Скрываем футер в игре, чтобы он не перекрывал ответы */
+    .app-footer { display: none; }
 }
 
 @media (max-width: 600px) {
