@@ -129,6 +129,7 @@ export function returnToMenu() {
     state.hintsUsed = new Set();
     state.currentTrack = null;
     state.options = [];
+    state.cachedTracks = [];
     // Обновляем HUD, чтобы он показывал нули
     updateScoreDisplay();
     updateStreakDisplay();
