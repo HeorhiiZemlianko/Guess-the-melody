@@ -26,7 +26,7 @@ export function createOrUpdatePlayer(videoId) {
     } else {
         state.player = new YT.Player('youtube-player', {
             height: '100%', width: '100%', videoId, playerVars: pVars,
-            events: { onReady: onPlayerReady, onStateChange: onPlayerStateChange }
+            events: { onReady: onPlayerReady, onStateChange: onPlayerStateChange, onError: onPlayerError }
         });
     }
 }
@@ -70,4 +70,21 @@ export function addControlButton() {
         if (state.player.getPlayerState() === YT.PlayerState.PLAYING) state.player.pauseVideo();
         else state.player.playVideo();
     });
+}
+
+function onPlayerError(event) {
+    // Коды 100, 101, 150 означают, что видео недоступно для встраивания
+    const isUnavailable = [100, 101, 150].includes(event.data);
+    if (isUnavailable) {
+        console.warn(`Видео недоступно (код ${event.data}). Пропускаем раунд.`);
+        
+        // Небольшая задержка, чтобы игрок понял, что произошло
+        setTimeout(() => {
+            // Вызываем функцию перехода к следующему раунду.
+            // Поскольку player.js не знает о game/engine.js напрямую,
+            // мы используем событие или передаём колбэк.
+            // Простой решение — эмитнуть пользовательское событие на document.
+            document.dispatchEvent(new CustomEvent('videoUnavailable'));
+        }, 800);
+    }
 }
