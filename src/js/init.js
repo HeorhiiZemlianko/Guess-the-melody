@@ -65,4 +65,49 @@ function wireEvents() {
     exitButton.addEventListener('click', returnToMenu);
     buttonsBlock.addEventListener('click', handleAnswerClick);
     hintsRow.addEventListener('click', handleHintClick);
+
+        // ===== ГОРЯЧИЕ КЛАВИШИ =====
+    document.addEventListener('keydown', (e) => {
+        // Если игрок печатает в поле ввода (хардкор), игнорируем горячие клавиши
+        if (document.activeElement.tagName === 'INPUT') {
+            if (e.key === 'Enter' && document.activeElement.id === 'hardcoreInput') {
+                const submitBtn = document.querySelector('.hardcore-submit');
+                if (submitBtn && !submitBtn.disabled) submitBtn.click();
+            }
+            return; 
+        }
+
+        // Esc — Выход в меню
+        if (e.key === 'Escape') {
+            returnToMenu();
+            return;
+        }
+
+        // Enter — Начать игру / Играть снова
+        if (e.key === 'Enter') {
+            if (!startScreen.classList.contains('hidden') && !startGameBtn.classList.contains('hidden')) {
+                startGameBtn.click();
+            } else if (!finalScreen.classList.contains('hidden')) {
+                restartButton.click();
+            }
+            return;
+        }
+
+        // Space — Пауза/Плей
+        if (e.code === 'Space') {
+            e.preventDefault(); // Запрещаем прокрутку страницы
+            const controlBtn = document.querySelector('#controlButton');
+            if (controlBtn && state.running) controlBtn.click();
+            return;
+        }
+
+        // 1, 2, 3, 4 — Быстрый выбор ответа
+        if (['1', '2', '3', '4'].includes(e.key) && state.running && !state.locked) {
+            const btns = document.querySelectorAll('.Buttons');
+            const index = parseInt(e.key) - 1;
+            if (btns[index] && !btns[index].disabled) {
+                btns[index].click();
+            }
+        }
+    });
 }
