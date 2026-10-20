@@ -6,12 +6,15 @@
     border: none; border-radius: 99px;
     cursor: pointer; transition: all var(--transition);
     text-decoration: none;
+    transition: transform 0.1s ease, background 0.25s ease;
 }
 .btn-primary {
     background: linear-gradient(135deg, var(--primary), var(--primary-light));
     color: #052a26;
     box-shadow: 0 12px 32px -10px rgba(42,157,143,0.7);
 }
+
+.btn:active { transform: scale(0.96) translateY(0); } /* Кнопка "вдавливается" при клике */
 .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 18px 40px -10px rgba(42,157,143,0.9); }
 .btn-ghost { background: transparent; color: var(--text-light); border: 1px solid var(--card-border); }
 .btn-ghost:hover { background: rgba(255,255,255,0.08); border-color: var(--primary); }
