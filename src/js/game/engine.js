@@ -213,13 +213,27 @@ async function loadNextRound() {
     state.locked = false;
 
     viewContent.querySelectorAll('.spinner, .error').forEach(el => el.remove());
-    const spinner = document.createElement('div');
-    spinner.className = 'spinner';
-    viewContent.appendChild(spinner);
+    
+    let tracks = [];
+    
+    // ОПТИМИЗАЦИЯ: Если в памяти есть треки, берем их оттуда
+    if (state.cachedTracks && state.cachedTracks.length >= 15) {
+        tracks = state.cachedTracks;
+    } else {
+        // Если кэш пуст — показываем спиннер и грузим новые
+        const spinner = document.createElement('div');
+        spinner.className = 'spinner';
+        viewContent.appendChild(spinner);
 
-    const tracks = await fetchPlaylistTracks();
-    spinner.remove();
-    if (!state.running) return;
+        const newTracks = await fetchPlaylistTracks();
+        spinner.remove();
+        
+        if (!state.running) return;
+        
+        // Сохраняем загруженные треки в кэш
+        state.cachedTracks = newTracks;
+        tracks = newTracks;
+    }
 
     const required = state.difficulty.hardcore ? 1 : state.difficulty.optionsCount;
     if (!tracks || tracks.length < Math.max(4, required)) {
