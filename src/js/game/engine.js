@@ -130,6 +130,8 @@ export function returnToMenu() {
     state.currentTrack = null;
     state.options = [];
     state.cachedTracks = [];
+    state.nextTrack = null;
+    state.nextOptions = [];
     // Обновляем HUD, чтобы он показывал нули
     updateScoreDisplay();
     updateStreakDisplay();
@@ -217,11 +219,15 @@ async function loadNextRound() {
     
     let tracks = [];
     
-    // ОПТИМИЗАЦИЯ: Если в памяти есть треки, берем их оттуда
-    if (state.cachedTracks && state.cachedTracks.length >= 15) {
-        tracks = state.cachedTracks;
+    // Если есть готовые данные для следующего раунда — берем их!
+    if (state.nextTrack && state.nextOptions && state.nextOptions.length > 0) {
+        state.currentTrack = state.nextTrack;
+        state.options = state.nextOptions;
+        
+        // Сразу же готовим данные для СЛЕДУЮЩЕГО раунда в фоне
+        prepareNextRoundData();
     } else {
-        // Если кэш пуст — показываем спиннер и грузим новые
+        // Если это первый раунд или кэш пуст — грузим
         const spinner = document.createElement('div');
         spinner.className = 'spinner';
         viewContent.appendChild(spinner);
@@ -231,26 +237,29 @@ async function loadNextRound() {
         
         if (!state.running) return;
         
-        // Сохраняем загруженные треки в кэш
         state.cachedTracks = newTracks;
         tracks = newTracks;
+
+        const required = state.difficulty.hardcore ? 1 : state.difficulty.optionsCount;
+        if (!tracks || tracks.length < Math.max(4, required)) {
+            const err = document.createElement('div');
+            err.className = 'error';
+            err.textContent = 'Не удалось загрузить треки. Попробуйте ещё раз.';
+            viewContent.appendChild(err);
+            return;
+        }
+
+        // Выбираем текущий трек
+        state.currentTrack = tracks[Math.floor(Math.random() * tracks.length)];
+        state.options = generateOptions(state.currentTrack, tracks);
+        
+        // Сразу готовим следующий
+        prepareNextRoundData();
     }
 
-    const required = state.difficulty.hardcore ? 1 : state.difficulty.optionsCount;
-    if (!tracks || tracks.length < Math.max(4, required)) {
-        const err = document.createElement('div');
-        err.className = 'error';
-        err.textContent = 'Не удалось загрузить треки. Попробуйте ещё раз.';
-        viewContent.appendChild(err);
-        return;
-    }
-
-    const correctTrack = tracks[Math.floor(Math.random() * tracks.length)];
-    state.currentTrack = correctTrack;
-    state.options = generateOptions(correctTrack, tracks);
-
+    // Обновляем интерфейс
     updateButtons(submitHardcoreAnswer);
-    createOrUpdatePlayer(correctTrack.videoId);
+    createOrUpdatePlayer(state.currentTrack.videoId);
 
     if (!state.globalTimerMode) {
         clearInterval(state.timer);
@@ -262,6 +271,18 @@ async function loadNextRound() {
     renderHints();
 
     startTimer();
+}
+
+// Готовит данные для следующего раунда в фоне
+function prepareNextRoundData() {
+    if (!state.cachedTracks || state.cachedTracks.length < 4) return;
+    
+    // Берем случайный трек, исключая текущий
+    const availableTracks = state.cachedTracks.filter(t => t.videoId !== state.currentTrack?.videoId);
+    if (availableTracks.length === 0) return;
+
+    state.nextTrack = availableTracks[Math.floor(Math.random() * availableTracks.length)];
+    state.nextOptions = generateOptions(state.nextTrack, state.cachedTracks);
 }
 
 async function nextRound() {
