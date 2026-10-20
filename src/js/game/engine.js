@@ -40,10 +40,12 @@ import { renderHints, updateHintsAffordability } from '../ui/hints.js';
 import { updateScoreDisplay, updateStreakDisplay, showPointsPopup, updateTurnIndicator } from '../ui/hud.js';
 import { normalizeStr, extractArtistFromTitle, cleanArtistName } from '../utils/strings.js';
 import { ModeStrategies } from './modes.js';
+import { SFX, initAudio } from '../audio/sfx.js';
 
 /* ===================== УПРАВЛЕНИЕ ИГРОЙ ===================== */
 
 export async function startGame() {
+    initAudio();
     state.running = true;
     state.locked = false;
     
@@ -136,6 +138,7 @@ export function returnToMenu() {
 }
 
 export function endGame() {
+    SFX.gameover();
     state.running = false;
     clearInterval(state.timer);
     state.timer = null;
@@ -264,6 +267,13 @@ function generateOptions(correctTrack, allTracks) {
 /* ===================== РЕЗУЛЬТАТ РАУНДА ===================== */
 
 function applyRoundResult(isCorrect, kind) {
+    if (isCorrect) {
+        SFX.correct();
+        if (navigator.vibrate) navigator.vibrate(50);
+    } else {
+        SFX.wrong();
+        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+    }
     const points = calculatePoints(isCorrect, state.timeLeft, state.difficulty.duration, state.streak);
     let realPoints = points;
 
@@ -344,6 +354,7 @@ function timeOut() {
 
 export function handleAnswerClick(e) {
     if (!state.running || state.locked) return;
+    SFX.click();
     const target = e.target;
     if (!target.classList.contains('Buttons')) return;
 
@@ -425,6 +436,7 @@ export async function handleHintClick(e) {
     }
 
     if (applied) {
+        SFX.hint();
         if (state.mode.key === 'duel') {
             if (state.currentPlayer === 1) state.p1Score -= cost;
             else state.p2Score -= cost;
