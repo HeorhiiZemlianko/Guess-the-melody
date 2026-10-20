@@ -554,3 +554,33 @@ function applySkipHint() {
     setTimeout(nextRound, 1200);
     return true;
 }
+
+// ===== ОБРАБОТКА НЕДОСТУПНЫХ ВИДЕО =====
+document.addEventListener('videoUnavailable', () => {
+    // Если игра не запущена или раунд уже завершается — ничего не делаем
+    if (!state.running || state.locked) return;
+
+    console.warn('Видео недоступно. Автоматически пропускаем раунд...');
+    
+    // Блокируем кнопки, чтобы игрок не успел нажать ответ
+    state.locked = true;
+    clearInterval(state.timer);
+
+    // Записываем результат как "пропущенный" (серый кружок в прогрессе)
+    state.roundResults.push('skipped');
+    renderRoundsProgress();
+
+    // Показываем сообщение поверх видео
+    const err = document.createElement('div');
+    err.className = 'error';
+    err.textContent = 'Видео удалено. Загружаем следующий трек...';
+    viewContent.appendChild(err);
+
+    // Переходим к следующему раунду через 1.5 секунды
+    setTimeout(() => {
+        // Удаляем сообщение об ошибке
+        if (err.parentNode) err.remove();
+        // Вызываем nextRound (она находится в этой же области видимости файла)
+        nextRound();
+    }, 1500);
+});
