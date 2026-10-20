@@ -35,12 +35,25 @@ export function onPlayerReady(event) {
     if (state.running && !state.locked) event.target.playVideo();
 }
 
+let playDelayTimeout = null;
+
 export function onPlayerStateChange(event) {
     const btn = document.querySelector('#controlButton');
+    
     if (event.data === YT.PlayerState.PLAYING) {
-        startTimer();
+        // Если видео начало играть — запускаем таймер с задержкой
+        clearTimeout(playDelayTimeout);
+        playDelayTimeout = setTimeout(() => {
+            // Проверяем, что видео все еще играет (игрок не нажал паузу за эти 1.5 сек)
+            if (state.player && state.player.getPlayerState() === YT.PlayerState.PLAYING) {
+                startTimer();
+            }
+        }, 1500); // Задержка 1.5 секунды для буферизации
+        
         if (btn) btn.innerHTML = '<i class="fa-solid fa-pause"></i>';
     } else if (event.data === YT.PlayerState.PAUSED) {
+        // Если пауза — отменяем запуск таймера и останавливаем его
+        clearTimeout(playDelayTimeout);
         clearInterval(state.timer);
         if (btn) btn.innerHTML = '<i class="fa-solid fa-play"></i>';
     }
