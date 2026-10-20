@@ -6,6 +6,7 @@ export const ITUNES_CACHE_MAX = 200;
 export const state = {
     player: null,
     currentTrack: null,
+    nextTrack: null, nextOptions: [],
     options: [],
     guessedSongs: 0,
     roundsPlayed: 0,
