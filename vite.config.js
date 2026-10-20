@@ -5,6 +5,7 @@ export default defineConfig({
   plugins: [
     VitePWA({
       registerType: 'autoUpdate',
+      injectRegister: 'auto',
       devOptions: {
         enabled: true
       },
@@ -15,6 +16,9 @@ export default defineConfig({
         theme_color: '#07090d',
         background_color: '#07090d',
         display: 'standalone',
+        start_url: '/',
+        scope: '/',
+        id: '/',
         icons: [
           {
             src: '/icon-192.png',
