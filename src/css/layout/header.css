@@ -54,5 +54,5 @@
 /* Индикатор серии (streak) */
 #streakHud { position: relative; transition: color var(--transition); }
 #streakHud.active { color: var(--primary-light); }
-#streakHud.active i { color: #ff7a00; animation: flame 0.6s ease infinite alternate; }
+#streakHud.active i { color: #ff7a00; animation: flame 0.6s ease infinite alternate; filter: drop-shadow(0 0 8px rgba(255, 122, 0, 0.8)); }
 #streakHud.active .hud-value { color: #ffb84d; }
