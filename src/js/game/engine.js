@@ -29,7 +29,7 @@ import {
     modeDifficultyHud, currentModeLabel, currentDifficultyLabel,
     createButton
 } from '../dom.js';
-import { fetchPlaylistTracks } from '../api/playlists.js';
+import { fetchPlaylistTracks, fetchRandomSearchTracks } from '../api/playlists.js';
 import { fetchArtistFromItunes } from '../api/itunes.js';
 import { calculatePoints } from '../core/scoring.js';
 import { saveHighScore, refreshHighScoreBadge } from '../core/storage.js';
@@ -232,13 +232,25 @@ async function loadNextRound() {
         spinner.className = 'spinner';
         viewContent.appendChild(spinner);
 
-        const newTracks = await fetchPlaylistTracks();
+        // Тематический режим: 50% шанс прямого поиска (search.list — 100 ед. квоты)
+        if (state.mode.key === 'thematic' && Math.random() < 0.5) {
+            tracks = (await fetchRandomSearchTracks(state.theme)) || [];
+        }
+
+        // Fallback: кэш плейлистов (если достаточно) или свежая загрузка
+        if (tracks.length < 4) {
+            if (state.cachedTracks && state.cachedTracks.length >= 15) {
+                tracks = state.cachedTracks;
+            } else {
+                const newTracks = await fetchPlaylistTracks();
+                state.cachedTracks = newTracks;
+                tracks = newTracks;
+            }
+        }
+
         spinner.remove();
         
         if (!state.running) return;
-        
-        state.cachedTracks = newTracks;
-        tracks = newTracks;
 
         const required = state.difficulty.hardcore ? 1 : state.difficulty.optionsCount;
         if (!tracks || tracks.length < Math.max(4, required)) {
@@ -325,6 +337,10 @@ function generateOptions(correctTrack, allTracks) {
 /* ===================== РЕЗУЛЬТАТ РАУНДА ===================== */
 
 function applyRoundResult(isCorrect, kind) {
+    if (state.mode.key === 'blitz') {
+        clearInterval(state.timer);
+    }
+
     if (isCorrect) {
         SFX.correct();
         if (navigator.vibrate) navigator.vibrate(50);
@@ -332,6 +348,7 @@ function applyRoundResult(isCorrect, kind) {
         SFX.wrong();
         if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
     }
+
     const points = calculatePoints(isCorrect, state.timeLeft, state.difficulty.duration, state.streak);
     let realPoints = points;
 
@@ -339,7 +356,7 @@ function applyRoundResult(isCorrect, kind) {
         state.guessedSongs++;
         state.streak++;
         state.bestStreak = Math.max(state.bestStreak, state.streak);
-        
+
         if (state.mode.key === 'duel') {
             if (state.currentPlayer === 1) state.p1Score += points;
             else state.p2Score += points;
@@ -356,7 +373,7 @@ function applyRoundResult(isCorrect, kind) {
         }
     }
 
-    // Вызываем логику режима
+    // Вызываем логику режима (для blitz здесь изменится state.timeLeft)
     const strategy = ModeStrategies[state.mode.key];
     strategy.onRoundEnd(state, isCorrect);
 
@@ -369,7 +386,8 @@ function applyRoundResult(isCorrect, kind) {
         if (!isCorrect) pointsPopup.classList.add('negative');
         pointsPopup.classList.add('visible');
         setTimeout(() => pointsPopup.classList.remove('visible', 'negative'), 1500);
-        timerValue.textContent = state.timeLeft; // обновляем цифру таймера на экране
+        // Обновляем цифру таймера на экране (теперь это безопасно, таймер уже остановлен)
+        timerValue.textContent = state.timeLeft;
     } else {
         showPointsPopup(points, isCorrect);
     }
