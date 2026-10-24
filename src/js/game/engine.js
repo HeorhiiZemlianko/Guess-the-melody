@@ -336,30 +336,23 @@ function generateOptions(correctTrack, allTracks) {
 }
 
 /* ===================== РЕЗУЛЬТАТ РАУНДА ===================== */
-
 function applyRoundResult(isCorrect, kind) {
-    if (state.mode.key === 'blitz') {
-        pointsPopup.textContent = realPoints;
-        clearInterval(state.timer);
-    } else {
-        showPointsPopup(points, isCorrect); // числовые очки
-    }
-
-    if (isCorrect) {
-        SFX.correct();
-        if (navigator.vibrate) navigator.vibrate(50);
-    } else {
-        SFX.wrong();
-        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-    }
-
+    // 1. Сначала вычисляем очки
     const points = calculatePoints(isCorrect, state.timeLeft, state.difficulty.duration, state.streak);
     let realPoints = points;
 
+    // 2. Останавливаем таймер, если это блиц (на всякий случай)
+    if (state.mode.key === 'blitz') {
+        clearInterval(state.timer);
+    }
+
+    // 3. Логика начисления очков
     if (isCorrect) {
         state.guessedSongs++;
         state.streak++;
         state.bestStreak = Math.max(state.bestStreak, state.streak);
+        SFX.correct();
+        if (navigator.vibrate) navigator.vibrate(50);
 
         if (state.mode.key === 'duel') {
             if (state.currentPlayer === 1) state.p1Score += points;
@@ -369,6 +362,9 @@ function applyRoundResult(isCorrect, kind) {
         }
     } else {
         state.streak = 0;
+        SFX.wrong();
+        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+
         if (state.mode.key === 'duel') {
             if (state.currentPlayer === 1) state.p1Score = Math.max(0, state.p1Score + points);
             else state.p2Score = Math.max(0, state.p2Score + points);
@@ -377,11 +373,11 @@ function applyRoundResult(isCorrect, kind) {
         }
     }
 
-    // Вызываем логику режима (для blitz здесь изменится state.timeLeft)
+    // 4. Вызываем логику режима (в блице здесь меняется timeLeft)
     const strategy = ModeStrategies[state.mode.key];
     strategy.onRoundEnd(state, isCorrect);
 
-    // Обновляем UI после логики режима
+    // 5. Обновляем UI (попапы) — теперь переменные точно существуют
     if (state.mode.key === 'blitz') {
         realPoints = isCorrect ? '+5 сек' : '-3 сек';
         pointsPopup.textContent = realPoints;
@@ -390,16 +386,18 @@ function applyRoundResult(isCorrect, kind) {
         if (!isCorrect) pointsPopup.classList.add('negative');
         pointsPopup.classList.add('visible');
         setTimeout(() => pointsPopup.classList.remove('visible', 'negative'), 1500);
-        // Обновляем цифру таймера на экране (теперь это безопасно, таймер уже остановлен)
+        // Обновляем таймер на экране
         timerValue.textContent = state.timeLeft;
     } else {
         showPointsPopup(points, isCorrect);
     }
 
+    // 6. Обновляем жизни в выживании
     if (state.mode.key === 'survival' && !isCorrect) {
         livesValue.textContent = state.lives;
     }
 
+    // 7. Записываем результат раунда и обновляем прогресс
     if (!kind) kind = isCorrect ? 'correct' : 'wrong';
     state.roundResults.push(kind);
     renderRoundsProgress();
