@@ -61,6 +61,7 @@ export async function startGame() {
     state.bestStreak = 0;
     state.hintsUsed = new Set();
     state.roundResults = [];
+    state.timeLeft = 60;
     
     // Инициализируем стратегию для текущего режима
     const strategy = ModeStrategies[state.mode.key];
@@ -338,7 +339,10 @@ function generateOptions(correctTrack, allTracks) {
 
 function applyRoundResult(isCorrect, kind) {
     if (state.mode.key === 'blitz') {
+        pointsPopup.textContent = realPoints;
         clearInterval(state.timer);
+    } else {
+        showPointsPopup(points, isCorrect); // числовые очки
     }
 
     if (isCorrect) {
